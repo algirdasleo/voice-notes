@@ -9,8 +9,11 @@ dependencies = [
     "langchain-openai>=1.1.7",
     "langgraph>=1.0.5",
     "openai>=2.15.0",
+    "openai-whisper>=20250625",
+    "psycopg2-binary>=2.9.11",
     "pydantic>=2.12.5",
     "pydantic-settings>=2.12.0",
+    "sqlmodel>=0.0.31",
     "streamlit>=1.52.2",
 ]
 
