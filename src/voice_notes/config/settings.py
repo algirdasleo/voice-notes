@@ -9,18 +9,23 @@ class Settings(BaseSettings):
 
     OPENAI_API_KEY: SecretStr  # Required due to Embedder usage
     ANTHROPIC_API_KEY: SecretStr | None = None
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: SecretStr
+    POSTGRES_USER: str | None = None
+    POSTGRES_PASSWORD: SecretStr | None = None
     POSTGRES_DB: str = "voice_notes"
 
     @property
     def DB_CONNECTION_STRING(self) -> str:
         """Construct database connection string from credentials."""
-        return (
-            f"postgresql://{self.POSTGRES_USER}:"
-            f"{self.POSTGRES_PASSWORD.get_secret_value()}@db:5432/"
-            f"{self.POSTGRES_DB}"
-        )
+        # If PostgreSQL credentials are provided, use them
+        if self.POSTGRES_USER and self.POSTGRES_PASSWORD:
+            return (
+                f"postgresql://{self.POSTGRES_USER}:"
+                f"{self.POSTGRES_PASSWORD.get_secret_value()}@db:5432/"
+                f"{self.POSTGRES_DB}"
+            )
+
+        # Otherwise use SQLite
+        return "sqlite:///./voice_notes.db"
 
     class Config:
         """BaseSettings configuration."""
