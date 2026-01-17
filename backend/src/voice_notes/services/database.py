@@ -1,6 +1,5 @@
 """Database connection and session management."""
 
-import streamlit as st
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 
@@ -9,7 +8,6 @@ from voice_notes.config.settings import get_settings
 settings = get_settings()
 
 
-@st.cache_resource
 def get_engine():
     """Get cached database engine."""
     return create_engine(
