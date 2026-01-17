@@ -6,15 +6,14 @@ from sqlmodel import Session, select
 
 from voice_notes.models.note import Note
 from voice_notes.models.schemas.notes import VoiceNoteUpdate
-from voice_notes.services.database import get_session
 
 
 class NotesRepository:
     """Repository for voice notes data access operations."""
 
-    def __init__(self, session: Session | None = None):
+    def __init__(self, session: Session):
         """Initialize repository with optional session."""
-        self.session = session or get_session()
+        self.session = session
 
     def get_all(self) -> list[Note]:
         """Fetch all voice notes from database."""
