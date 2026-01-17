@@ -1,5 +1,8 @@
 """Database connection and session management."""
 
+from typing import Any, Generator
+
+from sqlalchemy import Engine
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 
@@ -7,14 +10,19 @@ from voice_notes.config.settings import get_settings
 
 settings = get_settings()
 
+_engine: Engine | None = None
+
 
 def get_engine():
     """Get cached database engine."""
-    return create_engine(
-        settings.DB_CONNECTION_STRING,
-        echo=False,
-        poolclass=StaticPool,
-    )
+    global _engine
+    if _engine is None:
+        _engine = create_engine(
+            settings.DB_CONNECTION_STRING,
+            echo=False,
+            poolclass=StaticPool,
+        )
+    return _engine
 
 
 def create_tables() -> None:
@@ -23,7 +31,7 @@ def create_tables() -> None:
     SQLModel.metadata.create_all(engine)
 
 
-def get_session() -> Session:
+def get_session() -> Generator[Session, Any, None]:
     """Get a database session."""
-    engine = get_engine()
-    return Session(engine)
+    with Session(get_engine()) as session:
+        yield session
