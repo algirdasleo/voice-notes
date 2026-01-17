@@ -21,6 +21,7 @@ class Content(SQLModel, table=True):
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     note_id: UUID = Field(foreign_key="Note.id")
+    user_id: UUID = Field(foreign_key="User.id")
     title: str
     content_type: str = Field(min_length=1)
     body: str

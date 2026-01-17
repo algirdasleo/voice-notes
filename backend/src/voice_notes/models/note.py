@@ -11,6 +11,7 @@ class Note(SQLModel, table=True, extend_existing=True):
     """Model representing a note."""
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
+    user_id: UUID = Field(foreign_key="user.id")
     title: str
     transcription: str
     tags: list[str] = Field(default_factory=list, sa_type=JSON)
