@@ -6,15 +6,14 @@ from sqlmodel import Session, select
 
 from voice_notes.models.content import Content
 from voice_notes.models.schemas.content import ContentUpdate
-from voice_notes.services.database import get_session
 
 
 class ContentRepository:
     """Repository for content data access operations."""
 
-    def __init__(self, session: Session | None = None):
+    def __init__(self, session: Session):
         """Initialize repository with optional session."""
-        self.session = session or get_session()
+        self.session = session
 
     def get_all(self) -> list[Content]:
         """Fetch all generated content from database."""
