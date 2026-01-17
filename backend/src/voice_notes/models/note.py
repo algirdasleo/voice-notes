@@ -7,8 +7,8 @@ from sqlalchemy import JSON
 from sqlmodel import Field, SQLModel
 
 
-class VoiceNote(SQLModel, table=True, extend_existing=True):
-    """Model representing a voice note."""
+class Note(SQLModel, table=True, extend_existing=True):
+    """Model representing a note."""
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     title: str

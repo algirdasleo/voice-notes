@@ -4,8 +4,8 @@ from uuid import UUID
 
 from sqlmodel import Session, select
 
+from voice_notes.models.note import Note
 from voice_notes.models.schemas.notes import VoiceNoteUpdate
-from voice_notes.models.voice_note import VoiceNote
 from voice_notes.services.database import get_session
 
 
@@ -16,15 +16,15 @@ class NotesRepository:
         """Initialize repository with optional session."""
         self.session = session or get_session()
 
-    def get_all(self) -> list[VoiceNote]:
+    def get_all(self) -> list[Note]:
         """Fetch all voice notes from database."""
-        return list(self.session.exec(select(VoiceNote)).all())
+        return list(self.session.exec(select(Note)).all())
 
-    def get_by_id(self, note_id: UUID) -> VoiceNote | None:
+    def get_by_id(self, note_id: UUID) -> Note | None:
         """Fetch a single voice note by ID."""
-        return self.session.get(VoiceNote, note_id)
+        return self.session.get(Note, note_id)
 
-    def create(self, note: VoiceNote) -> VoiceNote:
+    def create(self, note: Note) -> Note:
         """Create a new voice note."""
         self.session.add(note)
         self.session.commit()
@@ -32,9 +32,9 @@ class NotesRepository:
 
         return note
 
-    def update(self, note_id: UUID, update_data: VoiceNoteUpdate) -> VoiceNote | None:
+    def update(self, note_id: UUID, update_data: VoiceNoteUpdate) -> Note | None:
         """Update a voice note by ID."""
-        note = self.session.get(VoiceNote, note_id)
+        note = self.session.get(Note, note_id)
         if not note:
             return None
 
@@ -50,7 +50,7 @@ class NotesRepository:
 
     def delete(self, note_id: UUID) -> bool:
         """Delete a voice note by ID."""
-        note = self.session.get(VoiceNote, note_id)
+        note = self.session.get(Note, note_id)
         if not note:
             return False
 
