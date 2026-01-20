@@ -1,6 +1,6 @@
 """Database connection and session management."""
 
-from typing import Any, Generator
+from typing import Iterator
 
 from sqlalchemy import Engine
 from sqlalchemy.pool import StaticPool
@@ -31,7 +31,7 @@ def create_tables() -> None:
     SQLModel.metadata.create_all(engine)
 
 
-def get_session() -> Generator[Session, Any, None]:
+def get_session() -> Iterator[Session]:
     """Get a database session."""
     with Session(get_engine()) as session:
         yield session
