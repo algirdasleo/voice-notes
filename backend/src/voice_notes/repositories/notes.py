@@ -15,11 +15,11 @@ class NotesRepository:
         """Initialize repository with optional session."""
         self.session = session
 
-    def get_all(self) -> list[Note]:
+    def get_notes(self, user_id: UUID) -> list[Note]:
         """Fetch all voice notes from database."""
-        return list(self.session.exec(select(Note)).all())
+        return list(self.session.exec(select(Note).where(Note.user_id == user_id)).all())
 
-    def get_by_id(self, note_id: UUID) -> Note | None:
+    def get_by_note_id(self, note_id: UUID) -> Note | None:
         """Fetch a single voice note by ID."""
         return self.session.get(Note, note_id)
 

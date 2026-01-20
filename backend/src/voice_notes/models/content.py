@@ -20,8 +20,8 @@ class Content(SQLModel, table=True):
     """Model representing generated content from a voice note."""
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    note_id: UUID = Field(foreign_key="Note.id")
-    user_id: UUID = Field(foreign_key="User.id")
+    note_id: UUID = Field(foreign_key="note.id")
+    user_id: UUID = Field(foreign_key="user.id")
     title: str
     content_type: str = Field(min_length=1)
     body: str
