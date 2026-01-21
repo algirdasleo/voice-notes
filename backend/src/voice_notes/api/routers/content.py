@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from voice_notes.api.dependencies import get_current_user_id
+from voice_notes.api.dependencies import AccessTokenData, get_access_token_data
 from voice_notes.models.content import Content
 from voice_notes.models.schemas.content import ContentCreate, ContentUpdate
 from voice_notes.repositories.content import ContentRepository
@@ -18,11 +18,11 @@ router = APIRouter()
 async def create_content(
     content: ContentCreate,
     session: AsyncSession = Depends(get_session),
-    user_id: UUID = Depends(get_current_user_id),
+    token_data: AccessTokenData = Depends(get_access_token_data),
 ):
     """Create a new note content."""
     content_repository = ContentRepository(session)
-    db_content = Content(**content.model_dump(), user_id=user_id)
+    db_content = Content(**content.model_dump(), user_id=token_data.user_id)
     return await content_repository.create(db_content)
 
 
@@ -30,12 +30,12 @@ async def create_content(
 async def get_contents(
     note_id: UUID,
     session: AsyncSession = Depends(get_session),
-    user_id: UUID = Depends(get_current_user_id),
+    token_data: AccessTokenData = Depends(get_access_token_data),
 ):
     """Get all content for a specific note."""
     content_repository = ContentRepository(session)
     content = await content_repository.get_by_note_id(note_id)
-    if not content or content[0].user_id != user_id:
+    if not content or content[0].user_id != token_data.user_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Content not found"
         )
@@ -48,29 +48,29 @@ async def update_content(
     content_id: UUID,
     content: ContentUpdate,
     session: AsyncSession = Depends(get_session),
-    user_id: UUID = Depends(get_current_user_id),
+    token_data: AccessTokenData = Depends(get_access_token_data),
 ):
     """Update content by content ID."""
     content_repository = ContentRepository(session)
     db_content = await content_repository.get_by_id(content_id)
-    if not db_content or db_content.user_id != user_id:
+    if not db_content or db_content.user_id != token_data.user_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Content not found"
         )
 
-    return content_repository.update(content_id, content)
+    return await content_repository.update(content_id, content)
 
 
 @router.delete(f"/{{content_id}}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_content(
     content_id: UUID,
     session: AsyncSession = Depends(get_session),
-    user_id: UUID = Depends(get_current_user_id),
+    token_data: AccessTokenData = Depends(get_access_token_data),
 ):
     """Delete content by ID."""
     content_repository = ContentRepository(session)
     content = await content_repository.get_by_id(content_id)
-    if not content or content.user_id != user_id:
+    if not content or content.user_id != token_data.user_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Content not found"
         )
