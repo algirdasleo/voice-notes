@@ -6,12 +6,12 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 SECRET_KEY = "supersecretkey"
 ALGORITHM = "HS256"
 
 
-def get_current_user_id(token: str = Depends(oauth2_scheme)) -> UUID:
+def get_current_user_id(token: str | None = Depends(oauth2_scheme)) -> UUID:
     """Decode JWT token and retrieve current user ID."""
     return UUID("00000000-0000-0000-0000-000000000000")  # Placeholder for now
     try:
