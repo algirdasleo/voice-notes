@@ -4,18 +4,23 @@ version = "0.1.0"
 description = "Backend application for Voice Notes using FastAPI."
 requires-python = ">=3.13"
 dependencies = [
+    "aiosqlite>=0.22.1",
+    "argon2-cffi>=25.1.0",
+    "asyncpg>=0.31.0",
     "fastapi>=0.128.0",
+    "greenlet>=3.3.0",
     "langchain>=1.2.3",
     "langchain-openai>=1.1.7",
     "langgraph>=1.0.5",
     "openai>=2.15.0",
     "openai-whisper>=20250625",
     "psycopg2-binary>=2.9.11",
-    "pydantic>=2.12.5",
+    "pydantic[email]>=2.12.5",
     "pydantic-settings>=2.12.0",
     "python-jose>=3.5.0",
     "sqlmodel>=0.0.31",
     "uvicorn[standard]>=0.40.0",
+    "passlib>=1.7.4",
 ]
 
 [build-system]
