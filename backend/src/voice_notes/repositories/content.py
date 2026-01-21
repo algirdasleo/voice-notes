@@ -2,7 +2,8 @@
 
 from uuid import UUID
 
-from sqlmodel import Session, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import select
 
 from voice_notes.models.content import Content
 from voice_notes.models.schemas.content import ContentUpdate
@@ -11,35 +12,39 @@ from voice_notes.models.schemas.content import ContentUpdate
 class ContentRepository:
     """Repository for content data access operations."""
 
-    def __init__(self, session: Session):
-        """Initialize repository with optional session."""
+    def __init__(self, session: AsyncSession):
+        """Initialize repository with async session."""
         self.session = session
 
-    def get_all(self) -> list[Content]:
+    async def get_all(self) -> list[Content]:
         """Fetch all generated content from database."""
-        return list(self.session.exec(select(Content)).all())
+        result = await self.session.execute(select(Content))
+        return list(result.scalars().all())
 
-    def get_by_id(self, content_id: UUID) -> Content | None:
+    async def get_by_id(self, content_id: UUID) -> Content | None:
         """Fetch a single content by ID."""
-        return self.session.get(Content, content_id)
+        return await self.session.get(Content, content_id)
 
-    def get_by_note_id(self, note_id: UUID) -> list[Content]:
+    async def get_by_note_id(self, note_id: UUID) -> list[Content]:
         """Fetch all content for a specific voice note."""
-        return list(
-            self.session.exec(select(Content).where(Content.note_id == note_id)).all()
+        result = await self.session.execute(
+            select(Content).where(Content.note_id == note_id)
         )
+        return list(result.scalars().all())
 
-    def create(self, content: Content) -> Content:
+    async def create(self, content: Content) -> Content:
         """Create a new content entry."""
         self.session.add(content)
-        self.session.commit()
-        self.session.refresh(content)
+        await self.session.commit()
+        await self.session.refresh(content)
 
         return content
 
-    def update(self, content_id: UUID, update_data: ContentUpdate) -> Content | None:
+    async def update(
+        self, content_id: UUID, update_data: ContentUpdate
+    ) -> Content | None:
         """Update content by ID."""
-        content = self.session.get(Content, content_id)
+        content = await self.session.get(Content, content_id)
         if not content:
             return None
 
@@ -47,23 +52,22 @@ class ContentRepository:
         for key, value in data.items():
             setattr(content, key, value)
 
-        self.session.add(content)
-        self.session.commit()
-        self.session.refresh(content)
+        await self.session.commit()
+        await self.session.refresh(content)
 
         return content
 
-    def delete(self, content_id: UUID) -> bool:
+    async def delete(self, content_id: UUID) -> bool:
         """Delete content by ID."""
-        content = self.session.get(Content, content_id)
+        content = await self.session.get(Content, content_id)
         if not content:
             return False
 
-        self.session.delete(content)
-        self.session.commit()
+        await self.session.delete(content)
+        await self.session.commit()
 
         return True
 
-    def close(self) -> None:
+    async def close(self) -> None:
         """Close the session."""
-        self.session.close()
+        await self.session.close()
