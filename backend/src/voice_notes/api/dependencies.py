@@ -19,18 +19,34 @@ pwd_context = CryptContext(
 )
 
 
+def decode_access_token(token: str) -> AccessTokenData | None:
+    """Decode JWT token and return AccessTokenData or None if invalid."""
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    user_id = payload.get("sub")
+    exp_date = payload.get("exp")
+    if not user_id or not exp_date:
+        return None
+
+    return AccessTokenData(user_id=UUID(user_id), exp_date=exp_date)
+
+
 def get_access_token_data(
     token: str = Depends(oauth2_scheme),
 ) -> AccessTokenData:
     """Decode JWT token and retrieve current user ID."""
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id = payload.get("sub")
-        exp_date = payload.get("exp")
-        if not user_id or not exp_date:
-            raise HTTPException(status_code=401, detail="Invalid token")
+        if not token:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+            )
 
-        return AccessTokenData(user_id=UUID(user_id), exp_date=exp_date)
+        token_data = decode_access_token(token=token)
+        if not token_data:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+            )
+
+        return token_data
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
