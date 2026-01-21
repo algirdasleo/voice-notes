@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlmodel import Session, select
 
 from voice_notes.models.note import Note
-from voice_notes.models.schemas.notes import VoiceNoteUpdate
+from voice_notes.models.schemas.notes import NoteUpdate
 
 
 class NotesRepository:
@@ -17,7 +17,9 @@ class NotesRepository:
 
     def get_notes(self, user_id: UUID) -> list[Note]:
         """Fetch all voice notes from database."""
-        return list(self.session.exec(select(Note).where(Note.user_id == user_id)).all())
+        return list(
+            self.session.exec(select(Note).where(Note.user_id == user_id)).all()
+        )
 
     def get_by_note_id(self, note_id: UUID) -> Note | None:
         """Fetch a single voice note by ID."""
@@ -31,7 +33,7 @@ class NotesRepository:
 
         return note
 
-    def update(self, note_id: UUID, update_data: VoiceNoteUpdate) -> Note | None:
+    def update(self, note_id: UUID, update_data: NoteUpdate) -> Note | None:
         """Update a voice note by ID."""
         note = self.session.get(Note, note_id)
         if not note:
