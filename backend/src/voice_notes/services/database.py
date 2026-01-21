@@ -1,38 +1,37 @@
 """Database connection and session management."""
 
-from typing import Iterator
-
-from sqlalchemy import Engine
-from sqlalchemy.pool import StaticPool
-from sqlmodel import Session, SQLModel, create_engine
+from typing import AsyncIterator
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlmodel import SQLModel
 
 from voice_notes import models  # noqa: F401 - Import to register models with SQLModel
 from voice_notes.config.settings import get_settings
 
 settings = get_settings()
 
-_engine: Engine | None = None
+_engine = None
 
 
 def get_engine():
-    """Get cached database engine."""
+    """Get cached async database engine."""
     global _engine
     if _engine is None:
-        _engine = create_engine(
+        _engine = create_async_engine(
             settings.DB_CONNECTION_STRING,
             echo=False,
-            poolclass=StaticPool,
         )
     return _engine
 
 
-def create_tables() -> None:
+async def create_tables() -> None:
     """Create all tables in the database."""
     engine = get_engine()
-    SQLModel.metadata.create_all(engine)
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
 
 
-def get_session() -> Iterator[Session]:
-    """Get a database session."""
-    with Session(get_engine()) as session:
+async def get_session() -> AsyncIterator[AsyncSession]:
+    """Get an async database session."""
+    engine = get_engine()
+    async with AsyncSession(engine) as session:
         yield session

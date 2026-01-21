@@ -19,13 +19,13 @@ class Settings(BaseSettings):
         # If PostgreSQL credentials are provided, use them
         if self.POSTGRES_USER and self.POSTGRES_PASSWORD:
             return (
-                f"postgresql://{self.POSTGRES_USER}:"
+                f"postgresql+asyncpg://{self.POSTGRES_USER}:"
                 f"{self.POSTGRES_PASSWORD.get_secret_value()}@db:5432/"
                 f"{self.POSTGRES_DB}"
             )
 
         # Otherwise use SQLite
-        return "sqlite:///./voice_notes.db"
+        return "sqlite+aiosqlite:///./voice_notes.db"
 
     class Config:
         """BaseSettings configuration."""
