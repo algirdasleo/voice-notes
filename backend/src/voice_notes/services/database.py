@@ -6,6 +6,7 @@ from sqlalchemy import Engine
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 
+from voice_notes import models  # noqa: F401 - Import to register models with SQLModel
 from voice_notes.config.settings import get_settings
 
 settings = get_settings()
