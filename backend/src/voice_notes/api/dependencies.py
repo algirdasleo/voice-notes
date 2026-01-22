@@ -21,13 +21,16 @@ pwd_context = CryptContext(
 
 def decode_access_token(token: str) -> AccessTokenData | None:
     """Decode JWT token and return AccessTokenData or None if invalid."""
-    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    user_id = payload.get("sub")
-    exp_date = payload.get("exp")
-    if not user_id or not exp_date:
-        return None
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        exp_date = payload.get("exp")
+        if not user_id or not exp_date:
+            return None
 
-    return AccessTokenData(user_id=UUID(user_id), exp_date=exp_date)
+        return AccessTokenData(user_id=UUID(user_id), exp_date=exp_date)
+    except JWTError:
+        return None
 
 
 def get_access_token_data(
