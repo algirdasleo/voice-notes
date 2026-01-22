@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 
 from voice_notes.api.routers import ai, auth, content, health, notes
+from voice_notes.services.ai import AIService
 from voice_notes.services.database import create_tables
 
 
@@ -11,6 +12,9 @@ from voice_notes.services.database import create_tables
 async def lifespan(app: FastAPI):
     """Lifespan context manager to handle startup and shutdown events."""
     await create_tables()
+
+    app.state.ai_service = AIService()
+
     yield
 
 

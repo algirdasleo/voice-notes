@@ -1,9 +1,11 @@
 """API endpoints for AI chat interactions."""
 
 from fastapi import APIRouter, WebSocket
+from pydantic import ValidationError
 from starlette import status
 
 from voice_notes.api.dependencies import decode_access_token
+from voice_notes.models.schemas.ai import AIChatRequest
 
 router = APIRouter()
 
@@ -23,10 +25,37 @@ async def chat_with_notes(websocket: WebSocket):
 
     await websocket.accept()
 
+    ai_service = websocket.app.state.ai_service
     try:
         while True:
             data = await websocket.receive_text()
-            await websocket.send_text("Echo: " + data)
-            await websocket.send_text(f"Access Token data: {token_data.model_dump()}")
-    except Exception:
+
+            try:
+                message = AIChatRequest.model_validate_json(data)
+            except ValidationError as ex:
+                await websocket.send_json(
+                    {
+                        "type": "error",
+                        "content": "Invalid request schema",
+                        "errors": ex.errors(),
+                    }
+                )
+                continue
+
+            if message.type == "close":
+                await websocket.send_json(
+                    {"type": "close", "content": "Connection closing gracefully"}
+                )
+                break
+
+            if message.type == "message":
+                response = await ai_service.process_message(
+                    user_id=token_data.user_id, content=message.content
+                )
+                await websocket.send_json({"type": "response", "content": response})
+
+    except Exception as e:
+        await websocket.send_json(
+            {"type": "error", "content": f"Server error: {str(e)}"}
+        )
         await websocket.close()
