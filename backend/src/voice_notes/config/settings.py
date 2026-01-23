@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     """Pydantic BaseSettings class for environment-based configuration."""
 
     OPENAI_API_KEY: SecretStr  # Required due to Embedder usage
+    HF_ACCESS_TOKEN: SecretStr  # Required for transcriber usage
     ANTHROPIC_API_KEY: SecretStr | None = None
     POSTGRES_USER: str | None = None
     POSTGRES_PASSWORD: SecretStr | None = None
