@@ -2,12 +2,17 @@
 
 from uuid import UUID, uuid4
 
-from sqlmodel import Field, SQLModel
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from voice_notes.models.base import Base
 
 
-class User(SQLModel, table=True):
+class User(Base):
     """Model representing a user."""
 
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    email: str
-    password_hash: str
+    __tablename__ = "user"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    email: Mapped[str] = mapped_column(String, unique=True)
+    password_hash: Mapped[str] = mapped_column(String)

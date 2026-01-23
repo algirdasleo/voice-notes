@@ -49,7 +49,7 @@ async def chat_with_notes(websocket: WebSocket):
                 break
 
             if message.type == "message":
-                response = await ai_service.process_message(
+                response = await ai_service.talk_with_notes(
                     user_id=token_data.user_id, content=message.content
                 )
                 await websocket.send_json({"type": "response", "content": response})

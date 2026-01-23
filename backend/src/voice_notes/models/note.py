@@ -3,16 +3,20 @@
 from datetime import date
 from uuid import UUID, uuid4
 
-from sqlalchemy import JSON
-from sqlmodel import Field, SQLModel
+from sqlalchemy import JSON, ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from voice_notes.models.base import Base
 
 
-class Note(SQLModel, table=True, extend_existing=True):
+class Note(Base):
     """Model representing a note."""
 
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    user_id: UUID = Field(foreign_key="user.id")
-    title: str
-    transcription: str
-    tags: list[str] = Field(default_factory=list, sa_type=JSON)
-    created_at: date = Field(default_factory=date.today)
+    __tablename__ = "note"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id"))
+    title: Mapped[str] = mapped_column(String)
+    transcription: Mapped[str] = mapped_column(String)
+    tags: Mapped[list[str]] = mapped_column(JSON, default=list)
+    created_at: Mapped[date] = mapped_column(default=date.today)

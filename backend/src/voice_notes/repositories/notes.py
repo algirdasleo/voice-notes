@@ -2,8 +2,8 @@
 
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
 
 from voice_notes.models.note import Note
 from voice_notes.models.schemas.notes import NoteUpdate

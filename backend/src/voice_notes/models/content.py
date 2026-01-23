@@ -3,7 +3,10 @@
 from datetime import date
 from uuid import UUID, uuid4
 
-from sqlmodel import Field, SQLModel
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from voice_notes.models.base import Base
 
 CONTENT_TYPES = [
     "Meeting Report",
@@ -16,13 +19,15 @@ CONTENT_TYPES = [
 ]
 
 
-class Content(SQLModel, table=True):
+class Content(Base):
     """Model representing generated content from a voice note."""
 
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    note_id: UUID = Field(foreign_key="note.id")
-    user_id: UUID = Field(foreign_key="user.id")
-    title: str
-    content_type: str = Field(min_length=1)
-    body: str
-    created_at: date = Field(default_factory=date.today)
+    __tablename__ = "content"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    note_id: Mapped[UUID] = mapped_column(ForeignKey("note.id"))
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id"))
+    title: Mapped[str] = mapped_column(String)
+    content_type: Mapped[str] = mapped_column(String)
+    body: Mapped[str] = mapped_column(String)
+    created_at: Mapped[date] = mapped_column(default=date.today)

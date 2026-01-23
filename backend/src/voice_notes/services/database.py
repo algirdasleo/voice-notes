@@ -1,11 +1,12 @@
 """Database connection and session management."""
 
 from typing import AsyncIterator
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlmodel import SQLModel
 
-from voice_notes import models  # noqa: F401 - Import to register models with SQLModel
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+
+from voice_notes import models  # noqa: F401 - Import to register models
 from voice_notes.config.settings import get_settings
+from voice_notes.models.base import Base
 
 settings = get_settings()
 
@@ -27,7 +28,7 @@ async def create_tables() -> None:
     """Create all tables in the database."""
     engine = get_engine()
     async with engine.begin() as conn:
-        await conn.run_sync(SQLModel.metadata.create_all)
+        await conn.run_sync(Base.metadata.create_all)
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:

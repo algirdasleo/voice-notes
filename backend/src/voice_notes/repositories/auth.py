@@ -1,7 +1,7 @@
 """Repository for auth related database operations."""
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select
 
 from voice_notes.models.user import User
 
