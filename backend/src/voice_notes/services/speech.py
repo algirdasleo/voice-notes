@@ -1,6 +1,6 @@
 """VoiceNotes Speech Services module."""
 
-from io import BytesIO
+import asyncio
 
 from huggingface_hub import InferenceClient
 
@@ -13,6 +13,10 @@ client = InferenceClient(
 )
 
 
-def transcribe_audio(audio_bytes: BytesIO) -> str:
+async def transcribe_audio(audio_data: bytes) -> str:
     """Transcribe audio file using Hugging Face transcription models."""
-    return client.automatic_speech_recognition(audio_bytes).text
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(
+        None, lambda: client.automatic_speech_recognition(audio_data)
+    )  # Wrap the blocking call in asyncio's run_in_executor to avoid blocking the event loop
+    return result.text
