@@ -11,7 +11,7 @@ class TestAI:
     async def test_websocket_requires_auth(self, ws_client: TestClient):
         """Test WebSocket connection without token closes with policy violation."""
         with pytest.raises(Exception):
-            with ws_client.websocket_connect("/ai/ws/chat"):
+            with ws_client.websocket_connect("/chat/ws"):
                 pass
 
     @pytest.mark.asyncio
@@ -19,7 +19,7 @@ class TestAI:
         """Test WebSocket connection with invalid token closes."""
         with pytest.raises(Exception):
             with ws_client.websocket_connect(
-                "/ai/ws/chat", cookies={"access_token": "invalid_token"}
+                "/chat/ws", cookies={"access_token": "invalid_token"}
             ):
                 pass
 
@@ -29,7 +29,7 @@ class TestAI:
     ):
         """Test WebSocket connection with valid token."""
         with ws_client.websocket_connect(
-            "/ai/ws/chat", cookies={"access_token": token}
+            "/chat/ws", cookies={"access_token": token}
         ) as websocket:
             # Send invalid JSON to test error handling
             websocket.send_text("invalid json")
@@ -43,7 +43,7 @@ class TestAI:
     ):
         """Test sending close message through WebSocket."""
         with ws_client.websocket_connect(
-            "/ai/ws/chat", cookies={"access_token": token}
+            "/chat/ws", cookies={"access_token": token}
         ) as websocket:
             message = {"type": "close"}
             websocket.send_json(message)
@@ -56,7 +56,7 @@ class TestAI:
     ):
         """Test WebSocket validates message format."""
         with ws_client.websocket_connect(
-            "/ai/ws/chat", cookies={"access_token": token}
+            "/chat/ws", cookies={"access_token": token}
         ) as websocket:
             websocket.send_text("not valid json or message")
             data = websocket.receive_json()

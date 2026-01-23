@@ -5,12 +5,12 @@ from pydantic import ValidationError
 from starlette import status
 
 from voice_notes.api.dependencies import decode_access_token
-from voice_notes.models.ai.schemas import AIChatRequest
+from voice_notes.models.chat.schemas import AIChatRequest
 
 router = APIRouter()
 
 
-@router.websocket(f"/ws/chat")
+@router.websocket("/ws")
 async def chat_with_notes(websocket: WebSocket):
     """Chat with voice notes using AI."""
     token = websocket.cookies.get("access_token")
@@ -25,7 +25,7 @@ async def chat_with_notes(websocket: WebSocket):
 
     await websocket.accept()
 
-    ai_service = websocket.app.state.ai_service
+    chat_service = websocket.app.state.chat_service
     try:
         while True:
             data = await websocket.receive_text()
@@ -49,7 +49,7 @@ async def chat_with_notes(websocket: WebSocket):
                 break
 
             if message.type == "message":
-                response = await ai_service.talk_with_notes(
+                response = await chat_service.talk_with_notes(
                     user_id=token_data.user_id, content=message.content
                 )
                 await websocket.send_json({"type": "response", "content": response})
