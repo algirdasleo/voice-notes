@@ -3,7 +3,7 @@
 from datetime import date
 from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey, JSON, String
+from sqlalchemy import JSON, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from voice_notes.models.shared import Base
