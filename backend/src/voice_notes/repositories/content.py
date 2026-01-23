@@ -59,7 +59,7 @@ class ContentRepository:
 
     async def delete(self, content_id: UUID) -> bool:
         """Delete content by ID."""
-        content = await self.session.get(Content, content_id)
+        content = await self.session.get(GeneratedContent, content_id)
         if not content:
             return False
 
