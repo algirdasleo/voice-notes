@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from voice_notes.api.dependencies import AccessTokenData, get_access_token_data
 from voice_notes.models.content import Content
-from voice_notes.models.schemas.content import ContentCreate, ContentUpdate
+from voice_notes.models.content.schemas import ContentCreate, ContentUpdate
 from voice_notes.repositories.content import ContentRepository
 from voice_notes.services.database import get_session
 

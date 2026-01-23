@@ -3,7 +3,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from voice_notes.models.user import User
+from voice_notes.models.users import User
 
 
 class AuthRepository:

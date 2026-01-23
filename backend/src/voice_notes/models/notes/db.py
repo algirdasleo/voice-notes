@@ -1,12 +1,12 @@
-"""Model for voice notes."""
+"""Note database model."""
 
 from datetime import date
 from uuid import UUID, uuid4
 
-from sqlalchemy import JSON, ForeignKey, String
+from sqlalchemy import ForeignKey, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from voice_notes.models.base import Base
+from voice_notes.models.shared import Base
 
 
 class Note(Base):

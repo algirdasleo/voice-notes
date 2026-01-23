@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from voice_notes.api.dependencies import get_access_token_data
 from voice_notes.models.auth import AccessTokenData
-from voice_notes.models.note import Note
-from voice_notes.models.schemas.notes import NoteCreate, NoteUpdate
+from voice_notes.models.notes import Note
+from voice_notes.models.notes.schemas import NoteCreate, NoteUpdate
 from voice_notes.repositories.notes import NotesRepository
 from voice_notes.services.database import get_session
 

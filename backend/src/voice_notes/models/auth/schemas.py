@@ -1,4 +1,4 @@
-"""Models for authentication and authorization."""
+"""Auth request/response schemas."""
 
 from uuid import UUID
 

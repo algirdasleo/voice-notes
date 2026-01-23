@@ -1,4 +1,4 @@
-"""Model for created content."""
+"""Content database model."""
 
 from datetime import date
 from uuid import UUID, uuid4
@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from voice_notes.models.base import Base
+from voice_notes.models.shared import Base
 
 CONTENT_TYPES = [
     "Meeting Report",

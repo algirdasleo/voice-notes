@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from starlette import status
 
 from voice_notes.api.dependencies import decode_access_token
-from voice_notes.models.schemas.ai import AIChatRequest
+from voice_notes.models.ai.schemas import AIChatRequest
 
 router = APIRouter()
 

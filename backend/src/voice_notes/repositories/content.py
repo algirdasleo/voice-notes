@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from voice_notes.models.content import Content
-from voice_notes.models.schemas.content import ContentUpdate
+from voice_notes.models.content.schemas import ContentUpdate
 
 
 class ContentRepository:

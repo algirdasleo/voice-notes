@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from voice_notes import models  # noqa: F401 - Import to register models
 from voice_notes.config.settings import get_settings
-from voice_notes.models.base import Base
+from voice_notes.models.shared import Base
 
 settings = get_settings()
 

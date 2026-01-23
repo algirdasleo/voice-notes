@@ -1,11 +1,11 @@
-"""Model for authenticated users."""
+"""User database model."""
 
 from uuid import UUID, uuid4
 
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from voice_notes.models.base import Base
+from voice_notes.models.shared import Base
 
 
 class User(Base):

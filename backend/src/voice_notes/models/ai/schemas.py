@@ -1,4 +1,4 @@
-"""Schemas for AI interactions."""
+"""AI request/response schemas."""
 
 from typing import Literal
 

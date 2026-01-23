@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
 from voice_notes.api.dependencies import create_jwt, hash_password, verify_password
-from voice_notes.models.schemas.auth import LoginRequest, RegisterRequest
+from voice_notes.models.users.schemas import LoginRequest, RegisterRequest
 from voice_notes.repositories.auth import AuthRepository
 from voice_notes.services.database import get_session
 
@@ -20,7 +20,7 @@ async def login(
 ):
     """User login endpoint."""
     repository = AuthRepository(session)
-    user = await repository.get_user(credentials.username)
+    user = await repository.get_user(credentials.email)
 
     if user and verify_password(credentials.password, user.password_hash):
         response.set_cookie(
@@ -44,4 +44,4 @@ async def register(
     """User registration endpoint."""
     repository = AuthRepository(session)
 
-    await repository.add_user(credentials.username, hash_password(credentials.password))
+    await repository.add_user(credentials.email, hash_password(credentials.password))
