@@ -19,7 +19,7 @@ CONTENT_TYPES = [
 ]
 
 
-class Content(Base):
+class GeneratedContent(Base):
     """Model representing generated content from a voice note."""
 
     __tablename__ = "content"

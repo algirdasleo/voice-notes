@@ -1,5 +1,5 @@
 """Content domain models and schemas."""
 
-from voice_notes.models.content.db import Content
+from voice_notes.models.content.db import GeneratedContent
 
-__all__ = ["Content"]
+__all__ = ["GeneratedContent"]

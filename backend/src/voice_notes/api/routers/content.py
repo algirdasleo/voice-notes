@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from voice_notes.api.dependencies import AccessTokenData, get_access_token_data
-from voice_notes.models.content import Content
+from voice_notes.models.content import GeneratedContent
 from voice_notes.models.content.schemas import ContentCreate, ContentUpdate
 from voice_notes.repositories.content import ContentRepository
 from voice_notes.services.database import get_session
@@ -22,7 +22,7 @@ async def create_content(
 ):
     """Create a new note content."""
     content_repository = ContentRepository(session)
-    db_content = Content(**content.model_dump(), user_id=token_data.user_id)
+    db_content = GeneratedContent(**content.model_dump(), user_id=token_data.user_id)
     return await content_repository.create(db_content)
 
 

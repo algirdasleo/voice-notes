@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from voice_notes.models.content import Content
+from voice_notes.models.content import GeneratedContent
 from voice_notes.models.content.schemas import ContentUpdate
 
 
@@ -16,23 +16,23 @@ class ContentRepository:
         """Initialize repository with async session."""
         self.session = session
 
-    async def get_all(self) -> list[Content]:
+    async def get_all(self) -> list[GeneratedContent]:
         """Fetch all generated content from database."""
-        result = await self.session.execute(select(Content))
+        result = await self.session.execute(select(GeneratedContent))
         return list(result.scalars().all())
 
-    async def get_by_id(self, content_id: UUID) -> Content | None:
+    async def get_by_id(self, content_id: UUID) -> GeneratedContent | None:
         """Fetch a single content by ID."""
-        return await self.session.get(Content, content_id)
+        return await self.session.get(GeneratedContent, content_id)
 
-    async def get_by_note_id(self, note_id: UUID) -> list[Content]:
+    async def get_by_note_id(self, note_id: UUID) -> list[GeneratedContent]:
         """Fetch all content for a specific voice note."""
         result = await self.session.execute(
-            select(Content).where(Content.note_id == note_id)
+            select(GeneratedContent).where(GeneratedContent.note_id == note_id)
         )
         return list(result.scalars().all())
 
-    async def create(self, content: Content) -> Content:
+    async def create(self, content: GeneratedContent) -> GeneratedContent:
         """Create a new content entry."""
         self.session.add(content)
         await self.session.commit()
@@ -42,9 +42,9 @@ class ContentRepository:
 
     async def update(
         self, content_id: UUID, update_data: ContentUpdate
-    ) -> Content | None:
+    ) -> GeneratedContent | None:
         """Update content by ID."""
-        content = await self.session.get(Content, content_id)
+        content = await self.session.get(GeneratedContent, content_id)
         if not content:
             return None
 
