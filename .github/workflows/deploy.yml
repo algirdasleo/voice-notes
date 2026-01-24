@@ -18,10 +18,12 @@ jobs:
 
       - run: npm install -g firebase-tools
 
-      - run: cd frontend && npm ci
-      - run: cd frontend && npm run build
-
-      - run: firebase deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }}
+      - name: Build and deploy frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+          firebase deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }}
 
   deploy-backend:
     name: Deploy Backend
@@ -40,7 +42,7 @@ jobs:
       - name: Build Docker image
         run: |
           cd backend
-          gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/voicenotes-api
+          gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/voicenotes-api --no-stream-logs
 
       - name: Deploy to Cloud Run
         run: |
