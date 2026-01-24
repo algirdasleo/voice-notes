@@ -48,6 +48,7 @@ jobs:
         run: |
           gcloud run deploy voicenotes-api \
             --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/voicenotes-api \
+            --region europe-west3 \
             --platform managed \
             --allow-unauthenticated \
             --port 8080 \
