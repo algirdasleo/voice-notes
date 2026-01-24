@@ -38,3 +38,4 @@ dev:
 	cd backend && uv run uvicorn voice_notes.main:app --reload & \
 	cd frontend && npm run dev & \
 	wait
+
