@@ -52,4 +52,5 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --port 8080 \
-            --set-env-vars ENV=prod
+            --timeout 90 \
+            --set-env-vars ENV=prod,OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},HF_ACCESS_TOKEN=${{ secrets.HF_ACCESS_TOKEN }} \

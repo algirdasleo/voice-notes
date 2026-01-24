@@ -1,5 +1,7 @@
 """Main module for Voice Notes backend application."""
 
+import logging
+
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 
@@ -7,13 +9,25 @@ from voice_notes.api.routers import auth, chat, content, health, notes, speech
 from voice_notes.services.chat import ChatService
 from voice_notes.services.database import create_tables
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager to handle startup and shutdown events."""
-    await create_tables()
+    # Initialize database
+    try:
+        await create_tables()
+        logger.info("Database tables created successfully")
+    except Exception as e:
+        logger.error(f"Failed to create database tables: {e}")
 
-    app.state.chat_service = ChatService()
+    try:
+        app.state.chat_service = ChatService()
+        logger.info("Chat service initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize chat service: {e}")
+        app.state.chat_service = None
 
     yield
 
