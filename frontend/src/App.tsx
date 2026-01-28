@@ -1,18 +1,11 @@
-import { Container, Flex } from "@radix-ui/themes";
-import { ThemeToggle } from "./components/ThemeToggle";
+"use client";
+
 import "./App.css";
+import { RouterProvider } from "react-router-dom";
+import { router } from "./router";
 
 function App() {
-  return (
-    <Flex justify="center">
-      <Container size="2" width="580px">
-        <Flex justify="between" align="center" py="4">
-          <h1>Voice Notes App</h1>
-          <ThemeToggle />
-        </Flex>
-      </Container>
-    </Flex>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
