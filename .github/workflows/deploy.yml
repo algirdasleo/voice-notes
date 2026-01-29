@@ -12,18 +12,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 20
-
-      - run: npm install -g firebase-tools
+      - uses: oven-sh/setup-bun@v1
 
       - name: Build and deploy frontend
         run: |
           cd frontend
-          npm ci
-          npm run build
-          firebase deploy --only hosting --project ${{ secrets.FIREBASE_PROJECT_ID }} --token ${{ secrets.FIREBASE_TOKEN }}
+          bun install
+          bun run build
+          bunx firebase-tools deploy --only hosting --project ${{ secrets.FIREBASE_PROJECT_ID }} --token ${{ secrets.FIREBASE_TOKEN }}
 
   deploy-backend:
     name: Deploy Backend
