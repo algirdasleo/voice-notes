@@ -8,4 +8,4 @@ export const SettingsPage = () => (
     </div>
     <div className="min-h-100 flex-1 rounded-xl bg-muted/50 md:min-h-min" />
   </div>
-);
+)

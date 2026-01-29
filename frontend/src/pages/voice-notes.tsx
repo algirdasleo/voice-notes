@@ -1,16 +1,13 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
 
 interface VoiceNotesPageProps {
-  notes?: Array<{ id: string; title: string }>;
-  isLoading?: boolean;
+  notes?: Array<{ id: string; title: string }>
+  isLoading?: boolean
 }
 
-export const VoiceNotesPage = ({
-  notes,
-  isLoading = false,
-}: VoiceNotesPageProps) => {
+export const VoiceNotesPage = ({ notes, isLoading = false }: VoiceNotesPageProps) => {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -27,7 +24,7 @@ export const VoiceNotesPage = ({
           <Skeleton className="h-10 w-full rounded-md" />
         </div>
       </div>
-    );
+    )
   }
 
   if (!notes || notes.length === 0) {
@@ -42,7 +39,7 @@ export const VoiceNotesPage = ({
         </div>
         <p className="text-muted-foreground">No notes yet</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -55,7 +52,7 @@ export const VoiceNotesPage = ({
         </Button>
       </div>
       <div className="space-y-2">
-        {notes.map((note) => (
+        {notes.map(note => (
           <div
             key={note.id}
             className="p-3 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
@@ -65,5 +62,5 @@ export const VoiceNotesPage = ({
         ))}
       </div>
     </div>
-  );
-};
+  )
+}

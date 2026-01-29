@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>frontend</title>
     <script>
-      (function() {
-        const theme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const isDark = theme === 'dark' || (!theme && prefersDark);
+      ;(function () {
+        const theme = localStorage.getItem("theme")
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+        const isDark = theme === "dark" || (!theme && prefersDark)
         if (isDark) {
-          document.documentElement.classList.add('dark');
-          document.documentElement.style.colorScheme = 'dark';
-          document.documentElement.style.backgroundColor = '#111113';
+          document.documentElement.classList.add("dark")
+          document.documentElement.style.colorScheme = "dark"
+          document.documentElement.style.backgroundColor = "#111113"
         } else {
-          document.documentElement.classList.add('light');
-          document.documentElement.style.colorScheme = 'light';
-          document.documentElement.style.backgroundColor = '#fcfcfc';
+          document.documentElement.classList.add("light")
+          document.documentElement.style.colorScheme = "light"
+          document.documentElement.style.backgroundColor = "#fcfcfc"
         }
-      })();
+      })()
     </script>
   </head>
   <body>

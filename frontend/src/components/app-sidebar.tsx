@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom"
 import {
   Sidebar,
   SidebarHeader,
@@ -12,7 +12,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-} from "@/components/animate-ui/components/radix/sidebar";
+} from "@/components/animate-ui/components/radix/sidebar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +21,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 import {
   BadgeCheck,
   Bell,
@@ -36,16 +36,15 @@ import {
   Settings2,
   Sparkles,
   Mic,
-} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useIsMobile } from "@/hooks/use-mobile";
+} from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const DATA = {
   user: {
     name: "Skyleen",
     email: "skyleen@example.com",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1909615404789506048/MTqvRsjo_400x400.jpg",
+    avatar: "https://pbs.twimg.com/profile_images/1909615404789506048/MTqvRsjo_400x400.jpg",
   },
   navMain: [
     {
@@ -81,15 +80,15 @@ const DATA = {
       icon: Map,
     },
   ],
-};
+}
 
 export const AppSidebar = () => {
-  const isMobile = useIsMobile();
-  const location = useLocation();
+  const isMobile = useIsMobile()
+  const location = useLocation()
 
   const isItemActive = (itemUrl: string) => {
-    return location.pathname.startsWith(itemUrl);
-  };
+    return location.pathname.startsWith(itemUrl)
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -113,7 +112,7 @@ export const AppSidebar = () => {
         <SidebarGroup>
           <SidebarGroupLabel>Platform</SidebarGroupLabel>
           <SidebarMenu>
-            {DATA.navMain.map((item) => (
+            {DATA.navMain.map(item => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild isActive={isItemActive(item.url)}>
                   <Link to={item.url}>
@@ -131,7 +130,7 @@ export const AppSidebar = () => {
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
           <SidebarGroupLabel>Projects</SidebarGroupLabel>
           <SidebarMenu>
-            {DATA.projects.map((item) => (
+            {DATA.projects.map(item => (
               <SidebarMenuItem key={item.name}>
                 <SidebarMenuButton asChild isActive={isItemActive(item.url)}>
                   <Link to={item.url}>
@@ -193,9 +192,7 @@ export const AppSidebar = () => {
                     <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">
-                      {DATA.user.name}
-                    </span>
+                    <span className="truncate font-semibold">{DATA.user.name}</span>
                     <span className="truncate text-xs">{DATA.user.email}</span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
@@ -210,19 +207,12 @@ export const AppSidebar = () => {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage
-                        src={DATA.user.avatar}
-                        alt={DATA.user.name}
-                      />
+                      <AvatarImage src={DATA.user.avatar} alt={DATA.user.name} />
                       <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">
-                        {DATA.user.name}
-                      </span>
-                      <span className="truncate text-xs">
-                        {DATA.user.email}
-                      </span>
+                      <span className="truncate font-semibold">{DATA.user.name}</span>
+                      <span className="truncate text-xs">{DATA.user.email}</span>
                     </div>
                   </div>
                 </DropdownMenuLabel>
@@ -261,5 +251,5 @@ export const AppSidebar = () => {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  );
-};
+  )
+}

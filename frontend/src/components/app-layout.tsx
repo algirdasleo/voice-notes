@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import type { ReactNode } from "react";
+import type { ReactNode } from "react"
 import {
   SidebarProvider,
   SidebarInset,
   SidebarTrigger,
-} from "@/components/animate-ui/components/radix/sidebar";
+} from "@/components/animate-ui/components/radix/sidebar"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,14 +13,14 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ThemeTogglerButton } from "./animate-ui/components/buttons/theme-toggler";
-import { AppSidebar } from "./app-sidebar";
+} from "@/components/ui/breadcrumb"
+import { Skeleton } from "@/components/ui/skeleton"
+import { ThemeTogglerButton } from "./animate-ui/components/buttons/theme-toggler"
+import { AppSidebar } from "./app-sidebar"
 
 interface AppLayoutProps {
-  children: ReactNode;
-  isLoading?: boolean;
+  children: ReactNode
+  isLoading?: boolean
 }
 
 export const AppLayout = ({ children, isLoading = false }: AppLayoutProps) => {
@@ -37,9 +37,7 @@ export const AppLayout = ({ children, isLoading = false }: AppLayoutProps) => {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Building Your Application
-                  </BreadcrumbLink>
+                  <BreadcrumbLink href="#">Building Your Application</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
@@ -67,5 +65,5 @@ export const AppLayout = ({ children, isLoading = false }: AppLayoutProps) => {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  );
-};
+  )
+}

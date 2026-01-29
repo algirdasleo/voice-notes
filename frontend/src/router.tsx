@@ -1,9 +1,9 @@
-import { createBrowserRouter } from "react-router-dom";
-import { AppLayout } from "./components/app-layout";
-import { VoiceNotesPageWrapper } from "@/components/voice-notes-wrapper";
-import { ContentPageWrapper } from "@/components/content-wrapper";
-import { ChatPage } from "./pages/chat";
-import { SettingsPage } from "./pages/settings";
+import { createBrowserRouter } from "react-router-dom"
+import { AppLayout } from "./components/app-layout"
+import { VoiceNotesPageWrapper } from "@/components/voice-notes-wrapper"
+import { ContentPageWrapper } from "@/components/content-wrapper"
+import { ChatPage } from "./pages/chat"
+import { SettingsPage } from "./pages/settings"
 
 export const router = createBrowserRouter([
   {
@@ -34,4 +34,4 @@ export const router = createBrowserRouter([
       </AppLayout>
     ),
   },
-]);
+])

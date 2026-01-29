@@ -1,5 +1,5 @@
-import * as React from 'react';
-import * as motion from 'motion/react-client';
+import * as React from "react"
+import * as motion from "motion/react-client"
 
 import {
   TooltipProvider as TooltipProviderPrimitive,
@@ -11,44 +11,41 @@ import {
   type TooltipProps as TooltipPrimitiveProps,
   type TooltipTriggerProps as TooltipTriggerPrimitiveProps,
   type TooltipContentProps as TooltipContentPrimitiveProps,
-} from '@/components/animate-ui/primitives/animate/tooltip';
-import { cn } from '@/lib/utils';
+} from "@/components/animate-ui/primitives/animate/tooltip"
+import { cn } from "@/lib/utils"
 
-type TooltipProviderProps = TooltipProviderPrimitiveProps;
+type TooltipProviderProps = TooltipProviderPrimitiveProps
 
 function TooltipProvider({ openDelay = 0, ...props }: TooltipProviderProps) {
-  return <TooltipProviderPrimitive openDelay={openDelay} {...props} />;
+  return <TooltipProviderPrimitive openDelay={openDelay} {...props} />
 }
 
-type TooltipProps = TooltipPrimitiveProps;
+type TooltipProps = TooltipPrimitiveProps
 
 function Tooltip({ sideOffset = 10, ...props }: TooltipProps) {
-  return <TooltipPrimitive sideOffset={sideOffset} {...props} />;
+  return <TooltipPrimitive sideOffset={sideOffset} {...props} />
 }
 
-type TooltipTriggerProps = TooltipTriggerPrimitiveProps;
+type TooltipTriggerProps = TooltipTriggerPrimitiveProps
 
 function TooltipTrigger({ ...props }: TooltipTriggerProps) {
-  return <TooltipTriggerPrimitive {...props} />;
+  return <TooltipTriggerPrimitive {...props} />
 }
 
-type TooltipContentProps = Omit<TooltipContentPrimitiveProps, 'asChild'> & {
-  children: React.ReactNode;
-  layout?: boolean | 'position' | 'size' | 'preserve-aspect';
-};
+type TooltipContentProps = Omit<TooltipContentPrimitiveProps, "asChild"> & {
+  children: React.ReactNode
+  layout?: boolean | "position" | "size" | "preserve-aspect"
+}
 
 function TooltipContent({
   className,
   children,
-  layout = 'preserve-aspect',
+  layout = "preserve-aspect",
   ...props
 }: TooltipContentProps) {
   return (
     <TooltipContentPrimitive
-      className={cn(
-        'z-50 w-fit bg-primary text-primary-foreground rounded-md',
-        className,
-      )}
+      className={cn("z-50 w-fit bg-primary text-primary-foreground rounded-md", className)}
       {...props}
     >
       <motion.div className="overflow-hidden px-3 py-1.5 text-xs text-balance">
@@ -59,7 +56,7 @@ function TooltipContent({
         tipRadius={2}
       />
     </TooltipContentPrimitive>
-  );
+  )
 }
 
 export {
@@ -71,4 +68,4 @@ export {
   type TooltipProps,
   type TooltipTriggerProps,
   type TooltipContentProps,
-};
+}
