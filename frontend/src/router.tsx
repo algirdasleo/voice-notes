@@ -1,9 +1,8 @@
 import { createBrowserRouter } from "react-router-dom"
-import { AppLayout } from "./components/app-layout"
 import { VoiceNotesPageWrapper } from "@/components/voice-notes-wrapper"
 import { ContentPageWrapper } from "@/components/content-wrapper"
-import { ChatPage } from "./pages/chat"
-import { SettingsPage } from "./pages/settings"
+import { ChatPageWrapper } from "@/components/chat-wrapper"
+import { SettingsPageWrapper } from "@/components/settings-wrapper"
 
 export const router = createBrowserRouter([
   {
@@ -20,18 +19,10 @@ export const router = createBrowserRouter([
   },
   {
     path: "/chat",
-    element: (
-      <AppLayout>
-        <ChatPage />
-      </AppLayout>
-    ),
+    element: <ChatPageWrapper />,
   },
   {
     path: "/settings",
-    element: (
-      <AppLayout>
-        <SettingsPage />
-      </AppLayout>
-    ),
+    element: <SettingsPageWrapper />,
   },
 ])

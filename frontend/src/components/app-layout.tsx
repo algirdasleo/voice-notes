@@ -18,12 +18,24 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ThemeTogglerButton } from "./animate-ui/components/buttons/theme-toggler"
 import { AppSidebar } from "./app-sidebar"
 
+interface BreadcrumbItemType {
+  label: string
+  href?: string
+}
+
 interface AppLayoutProps {
   children: ReactNode
   isLoading?: boolean
+  headerAction?: ReactNode
+  breadcrumbs?: BreadcrumbItemType[]
 }
 
-export const AppLayout = ({ children, isLoading = false }: AppLayoutProps) => {
+export const AppLayout = ({
+  children,
+  isLoading = false,
+  headerAction,
+  breadcrumbs = [],
+}: AppLayoutProps) => {
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -36,17 +48,25 @@ export const AppLayout = ({ children, isLoading = false }: AppLayoutProps) => {
           <div className="flex flex-1 items-center justify-between">
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">Building Your Application</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                </BreadcrumbItem>
+                {breadcrumbs.map((item, index) => (
+                  <div key={item.label} className="flex items-center gap-2">
+                    <BreadcrumbItem>
+                      {item.href ? (
+                        <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+                      ) : (
+                        <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                      )}
+                    </BreadcrumbItem>
+                    {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
+                  </div>
+                ))}
               </BreadcrumbList>
             </Breadcrumb>
 
-            <ThemeTogglerButton modes={["light", "dark"]} variant="secondary" />
+            <div className="flex items-center gap-2">
+              {headerAction}
+              <ThemeTogglerButton modes={["light", "dark"]} variant="secondary" />
+            </div>
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
