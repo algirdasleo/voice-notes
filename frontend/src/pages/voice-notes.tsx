@@ -9,21 +9,8 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item"
-
-interface VoiceNote {
-  id: string
-  title: string
-  topic?: string
-  date?: string
-  duration: string
-  tags?: string[]
-}
-
-const BADGE_COLORS = ["blue", "green", "red", "purple", "yellow", "pink", "cyan"] as const
-
-const getBadgeColor = (tag: string, index: number) => {
-  return BADGE_COLORS[index % BADGE_COLORS.length]
-}
+import { type VoiceNote, type VoiceNotesPageProps } from "@/types/voice-note"
+import { getBadgeColor } from "@/lib/badge-utils"
 
 export const VoiceNotesPage = ({ notes, isLoading = false }: VoiceNotesPageProps) => {
   if (isLoading) {
@@ -55,7 +42,7 @@ export const VoiceNotesPage = ({ notes, isLoading = false }: VoiceNotesPageProps
       <div className="flex justify-center w-full flex-1">
         <div className="flex w-full max-w-2xl flex-col gap-6">
           <ItemGroup className="gap-4">
-            {notes.map(note => (
+            {notes.map((note: VoiceNote) => (
               <Item
                 key={note.id}
                 variant="outline"
@@ -85,12 +72,8 @@ export const VoiceNotesPage = ({ notes, isLoading = false }: VoiceNotesPageProps
                     </div>
                     {note.tags && note.tags.length > 0 && (
                       <div className="flex gap-1 flex-wrap">
-                        {note.tags.map((tag, index) => (
-                          <Badge
-                            key={tag}
-                            variant={getBadgeColor(tag, index) as any}
-                            className="text-xs"
-                          >
+                        {note.tags.map((tag: string, index: number) => (
+                          <Badge key={tag} variant={getBadgeColor(index)} className="text-xs">
                             {tag}
                           </Badge>
                         ))}

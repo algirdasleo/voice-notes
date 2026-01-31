@@ -1,15 +1,5 @@
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from "@/components/ui/item"
-
-interface ChatItem {
-  id: string
-  title: string
-  description?: string
-  duration?: string
-}
-
-interface ChatPageProps {
-  chats?: ChatItem[]
-}
+import { type ChatItem, type ChatPageProps } from "@/types/chat"
 
 export const ChatPage = ({ chats = [] }: ChatPageProps) => {
   if (chats.length === 0) {
@@ -26,7 +16,7 @@ export const ChatPage = ({ chats = [] }: ChatPageProps) => {
     <div className="flex justify-center">
       <div className="w-full max-w-2xl">
         <ItemGroup className="gap-4">
-          {chats.map(chat => (
+          {chats.map((chat: ChatItem) => (
             <Item key={chat.id} variant="outline" asChild role="listitem">
               <a href={`/chat/${chat.id}`}>
                 <ItemContent>

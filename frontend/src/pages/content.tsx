@@ -7,19 +7,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from "@/components/ui/item"
-
-interface ContentItem {
-  id: string
-  title: string
-  topic?: string
-  date?: string
-  duration?: string
-}
-
-interface ContentPageProps {
-  content?: ContentItem[]
-  isLoading?: boolean
-}
+import { type ContentItem, type ContentPageProps } from "@/types/content"
 
 export const ContentPage = ({ content, isLoading = false }: ContentPageProps) => {
   if (isLoading) {
@@ -50,7 +38,7 @@ export const ContentPage = ({ content, isLoading = false }: ContentPageProps) =>
     <div className="flex justify-center">
       <div className="flex w-full max-w-2xl flex-col gap-6">
         <ItemGroup className="gap-4">
-          {content.map(item => (
+          {content.map((item: ContentItem) => (
             <Item
               key={item.id}
               variant="outline"
