@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "voice_notes"
 
     # Google OAuth credentials
-    GOOGLE_CLIENT_ID: str
-    GOOGLE_CLIENT_SECRET: str
+    GOOGLE_CLIENT_ID: SecretStr
+    GOOGLE_CLIENT_SECRET: SecretStr
 
     # Application URLs
     BACKEND_URL: str

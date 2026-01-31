@@ -65,8 +65,8 @@ init(
                             third_party_id="google",
                             clients=[
                                 ProviderClientConfig(
-                                    client_id=settings.GOOGLE_CLIENT_ID,
-                                    client_secret=settings.GOOGLE_CLIENT_SECRET,
+                                    client_id=settings.GOOGLE_CLIENT_ID.get_secret_value(),
+                                    client_secret=settings.GOOGLE_CLIENT_SECRET.get_secret_value(),
                                 )
                             ],
                         )
