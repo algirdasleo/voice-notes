@@ -35,8 +35,7 @@ export function MicSelector({
   disabled,
   className,
 }: MicSelectorProps) {
-  const { devices, loading, error, hasPermission, loadDevices } =
-    useAudioDevices()
+  const { devices, loading, error, hasPermission, loadDevices } = useAudioDevices()
   const [selectedDevice, setSelectedDevice] = useState<string>(value || "")
   const [internalMuted, setInternalMuted] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -61,7 +60,7 @@ export function MicSelector({
     }
   }, [defaultDeviceId, selectedDevice, onValueChange])
 
-  const currentDevice = devices.find((d) => d.deviceId === selectedDevice) ||
+  const currentDevice = devices.find(d => d.deviceId === selectedDevice) ||
     devices[0] || {
       label: loading ? "Loading..." : "No microphone",
       deviceId: "",
@@ -96,10 +95,7 @@ export function MicSelector({
         <Button
           variant="ghost"
           size="sm"
-          className={cn(
-            "hover:bg-accent flex w-48 cursor-pointer items-center gap-1.5",
-            className
-          )}
+          className={cn("hover:bg-accent flex w-48 cursor-pointer items-center gap-1.5", className)}
           disabled={loading || disabled}
         >
           {isMuted ? (
@@ -107,9 +103,7 @@ export function MicSelector({
           ) : (
             <Mic className="h-4 w-4 flex-shrink-0" />
           )}
-          <span className="flex-1 truncate text-left">
-            {currentDevice.label}
-          </span>
+          <span className="flex-1 truncate text-left">{currentDevice.label}</span>
           <ChevronsUpDown className="h-3 w-3 flex-shrink-0" />
         </Button>
       </DropdownMenuTrigger>
@@ -119,17 +113,15 @@ export function MicSelector({
         ) : error ? (
           <DropdownMenuItem disabled>Error: {error}</DropdownMenuItem>
         ) : (
-          devices.map((device) => (
+          devices.map(device => (
             <DropdownMenuItem
               key={device.deviceId}
-              onClick={(e) => handleDeviceSelect(device.deviceId, e)}
-              onSelect={(e) => e.preventDefault()}
+              onClick={e => handleDeviceSelect(device.deviceId, e)}
+              onSelect={e => e.preventDefault()}
               className="flex items-center justify-between"
             >
               <span className="truncate">{device.label}</span>
-              {selectedDevice === device.deviceId && (
-                <Check className="h-4 w-4 flex-shrink-0" />
-              )}
+              {selectedDevice === device.deviceId && <Check className="h-4 w-4 flex-shrink-0" />}
             </DropdownMenuItem>
           ))
         )}
@@ -140,17 +132,13 @@ export function MicSelector({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault()
                   toggleMute()
                 }}
                 className="h-8 gap-2"
               >
-                {isMuted ? (
-                  <MicOff className="h-4 w-4" />
-                ) : (
-                  <Mic className="h-4 w-4" />
-                )}
+                {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 <span className="text-sm">{isMuted ? "Unmute" : "Mute"}</span>
               </Button>
               <div className="bg-accent ml-auto w-16 overflow-hidden rounded-md p-1.5">
@@ -185,10 +173,9 @@ export function useAudioDevices() {
       const deviceList = await navigator.mediaDevices.enumerateDevices()
 
       const audioInputs = deviceList
-        .filter((device) => device.kind === "audioinput")
-        .map((device) => {
-          let cleanLabel =
-            device.label || `Microphone ${device.deviceId.slice(0, 8)}`
+        .filter(device => device.kind === "audioinput")
+        .map(device => {
+          let cleanLabel = device.label || `Microphone ${device.deviceId.slice(0, 8)}`
           cleanLabel = cleanLabel.replace(/\s*\([^)]*\)/g, "").trim()
 
           return {
@@ -200,9 +187,7 @@ export function useAudioDevices() {
 
       setDevices(audioInputs)
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to get audio devices"
-      )
+      setError(err instanceof Error ? err.message : "Failed to get audio devices")
       console.error("Error getting audio devices:", err)
     } finally {
       setLoading(false)
@@ -219,15 +204,14 @@ export function useAudioDevices() {
       const tempStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       })
-      tempStream.getTracks().forEach((track) => track.stop())
+      tempStream.getTracks().forEach(track => track.stop())
 
       const deviceList = await navigator.mediaDevices.enumerateDevices()
 
       const audioInputs = deviceList
-        .filter((device) => device.kind === "audioinput")
-        .map((device) => {
-          let cleanLabel =
-            device.label || `Microphone ${device.deviceId.slice(0, 8)}`
+        .filter(device => device.kind === "audioinput")
+        .map(device => {
+          let cleanLabel = device.label || `Microphone ${device.deviceId.slice(0, 8)}`
           cleanLabel = cleanLabel.replace(/\s*\([^)]*\)/g, "").trim()
 
           return {
@@ -240,9 +224,7 @@ export function useAudioDevices() {
       setDevices(audioInputs)
       setHasPermission(true)
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to get audio devices"
-      )
+      setError(err instanceof Error ? err.message : "Failed to get audio devices")
       console.error("Error getting audio devices:", err)
     } finally {
       setLoading(false)
@@ -265,10 +247,7 @@ export function useAudioDevices() {
     navigator.mediaDevices.addEventListener("devicechange", handleDeviceChange)
 
     return () => {
-      navigator.mediaDevices.removeEventListener(
-        "devicechange",
-        handleDeviceChange
-      )
+      navigator.mediaDevices.removeEventListener("devicechange", handleDeviceChange)
     }
   }, [hasPermission, loadDevicesWithPermission, loadDevicesWithoutPermission])
 
