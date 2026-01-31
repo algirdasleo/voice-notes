@@ -23,7 +23,6 @@ jobs:
         env:
           VITE_FRONTEND_URL: ${{ vars.FRONTEND_URL }}
           VITE_BACKEND_URL: ${{ vars.BACKEND_URL }}
-          VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
 
   deploy-backend:
     name: Deploy Backend
