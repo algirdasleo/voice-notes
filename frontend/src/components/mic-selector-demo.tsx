@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { Disc, Pause, Play, Trash2 } from "lucide-react"
+import { Pause, Play, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -116,7 +116,7 @@ export function MicSelectorDemo() {
   const showRecorded = state === "recorded"
 
   return (
-    <div className="flex min-h-[200px] w-full items-center justify-center p-4">
+    <div className="flex min-h-50 w-full items-center justify-center p-4">
       <Card className="m-0 w-full max-w-2xl border p-0 shadow-lg">
         <div className="flex w-full items-center justify-between gap-2 p-2">
           <div className="h-8 flex-1 flex items-center gap-2">

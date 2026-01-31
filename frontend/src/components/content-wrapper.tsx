@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { AppLayout } from "./app-layout"
 import { ContentPage } from "@/pages/content"
+import { type ContentItem } from "@/types/content"
 
-const loadContent = async () => {
+const loadContent = async (): Promise<ContentItem[]> => {
   return new Promise(resolve => {
     setTimeout(() => {
       resolve([
@@ -42,18 +43,12 @@ const loadContent = async () => {
 }
 
 export function ContentPageWrapper() {
-  const [content, setContent] = useState<Array<{
-    id: string
-    title: string
-    topic?: string
-    date?: string
-    duration?: string
-  }> | null>(null)
+  const [content, setContent] = useState<ContentItem[] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     loadContent().then(data => {
-      setContent(data as typeof content)
+      setContent(data)
       setIsLoading(false)
     })
   }, [])

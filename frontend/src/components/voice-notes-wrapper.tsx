@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { AppLayout } from "./app-layout"
 import { VoiceNotesPage } from "@/pages/voice-notes"
+import { type VoiceNote } from "@/types/voice-note"
 
-const loadVoiceNotes = async () => {
+const loadVoiceNotes = async (): Promise<VoiceNote[]> => {
   return new Promise(resolve => {
     setTimeout(() => {
       resolve([
@@ -38,14 +39,7 @@ const loadVoiceNotes = async () => {
 }
 
 export function VoiceNotesPageWrapper() {
-  const [notes, setNotes] = useState<Array<{
-    id: string
-    title: string
-    topic?: string
-    date?: string
-    duration: string
-    tags?: string[]
-  }> | null>(null)
+  const [notes, setNotes] = useState<VoiceNote[] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
