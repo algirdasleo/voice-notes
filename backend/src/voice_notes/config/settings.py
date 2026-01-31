@@ -7,12 +7,20 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     """Pydantic BaseSettings class for environment-based configuration."""
 
-    OPENAI_API_KEY: SecretStr  # Required due to Embedder usage
-    HF_ACCESS_TOKEN: SecretStr  # Required for transcriber usage
-    ANTHROPIC_API_KEY: SecretStr | None = None
+    # API key for AI services
+    OPENAI_API_KEY: SecretStr
+
+    # Hugging Face access token for transcribtion model
+    HF_ACCESS_TOKEN: SecretStr
+
+    # Database credentials
     POSTGRES_USER: str | None = None
     POSTGRES_PASSWORD: SecretStr | None = None
     POSTGRES_DB: str = "voice_notes"
+
+    # Google OAuth credentials
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
 
     @property
     def DB_CONNECTION_STRING(self) -> str:

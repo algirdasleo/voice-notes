@@ -28,7 +28,7 @@ class ContentResponse(BaseModel):
 
     id: UUID
     note_id: UUID
-    user_id: UUID
+    user_id: str
     title: str
     content_type: str
     body: str

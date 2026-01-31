@@ -2,10 +2,10 @@
 
 from fastapi import APIRouter, WebSocket
 from pydantic import ValidationError
-from starlette import status
+from supertokens_python.recipe.session import SessionContainer
 
-from voice_notes.api.dependencies import decode_access_token
 from voice_notes.models.chat.schemas import AIChatRequest
+from voice_notes.services.auth import AuthService
 
 router = APIRouter()
 
@@ -13,14 +13,12 @@ router = APIRouter()
 @router.websocket("/ws")
 async def chat_with_notes(websocket: WebSocket):
     """Chat with voice notes using AI."""
-    token = websocket.cookies.get("access_token")
-    if not token:
-        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-        return
+    # Authenticate the WebSocket connection
+    session: SessionContainer | None = await AuthService.verify_websocket_session(
+        websocket
+    )
 
-    token_data = decode_access_token(token=token)
-    if not token_data:
-        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+    if not session:
         return
 
     await websocket.accept()
@@ -50,7 +48,7 @@ async def chat_with_notes(websocket: WebSocket):
 
             if message.type == "message":
                 response = await chat_service.talk_with_notes(
-                    user_id=token_data.user_id, content=message.content
+                    user_id=session.user_id, content=message.content
                 )
                 await websocket.send_json({"type": "response", "content": response})
 

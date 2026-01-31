@@ -4,8 +4,16 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
+from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.recipe import emailpassword, session, thirdparty, usermetadata
+from supertokens_python.recipe.thirdparty.provider import (
+    ProviderClientConfig,
+    ProviderConfig,
+    ProviderInput,
+)
 
 from voice_notes.api.routers import auth, chat, content, health, notes, speech
+from voice_notes.config.settings import get_settings
 from voice_notes.services.chat import ChatService
 from voice_notes.services.database import create_tables
 
@@ -32,7 +40,42 @@ async def lifespan(app: FastAPI):
     yield
 
 
+settings = get_settings()
 app = FastAPI(lifespan=lifespan)
+
+
+init(
+    app_info=InputAppInfo(
+        app_name="VoiceNotes",
+        api_domain="http://localhost:8000",
+        website_domain="http://localhost:5173",
+        api_base_path="/auth",
+    ),
+    supertokens_config=SupertokensConfig(connection_uri="https://try.supertokens.io"),
+    framework="fastapi",
+    recipe_list=[
+        emailpassword.init(),
+        session.init(),
+        usermetadata.init(),
+        thirdparty.init(
+            sign_in_and_up_feature=thirdparty.SignInAndUpFeature(
+                providers=[
+                    ProviderInput(
+                        config=ProviderConfig(
+                            third_party_id="google",
+                            clients=[
+                                ProviderClientConfig(
+                                    client_id=settings.GOOGLE_CLIENT_ID,
+                                    client_secret=settings.GOOGLE_CLIENT_SECRET,
+                                )
+                            ],
+                        )
+                    )
+                ]
+            )
+        ),
+    ],
+)
 
 app.include_router(health.router, prefix="/health", tags=["Health Check"])
 app.include_router(notes.router, prefix="/notes", tags=["Voice Notes"])

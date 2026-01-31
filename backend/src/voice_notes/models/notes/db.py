@@ -15,7 +15,7 @@ class Note(Base):
     __tablename__ = "note"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id"))
+    user_id: Mapped[str] = mapped_column(ForeignKey("user.id"))
     title: Mapped[str] = mapped_column(String)
     transcription: Mapped[str] = mapped_column(String)
     tags: Mapped[list[str]] = mapped_column(JSON, default=list)

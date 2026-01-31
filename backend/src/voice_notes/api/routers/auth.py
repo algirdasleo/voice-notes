@@ -1,47 +1,17 @@
 """API Endpoints for authentication."""
 
-from fastapi import APIRouter, Depends, HTTPException, Response
-from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
-
-from voice_notes.api.dependencies import create_jwt, hash_password, verify_password
-from voice_notes.models.users.schemas import LoginRequest, RegisterRequest
-from voice_notes.repositories.auth import AuthRepository
-from voice_notes.services.database import get_session
+from fastapi import APIRouter, Depends
+from supertokens_python.recipe.session.framework.fastapi import verify_session
+from supertokens_python.recipe.usermetadata.asyncio import get_user_metadata
 
 router = APIRouter()
 
 
-@router.post("/login", status_code=204)
-async def login(
-    credentials: LoginRequest,
-    response: Response,
-    session: AsyncSession = Depends(get_session),
-):
-    """User login endpoint."""
-    repository = AuthRepository(session)
-    user = await repository.get_user(credentials.email)
-
-    if user and verify_password(credentials.password, user.password_hash):
-        response.set_cookie(
-            "access_token",
-            create_jwt(user.id, 600),
-            httponly=True,
-            secure=True,
-            samesite="strict",
-        )
-        return None
-
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-    )
-
-
-@router.post("/register", status_code=201)
-async def register(
-    credentials: RegisterRequest, session: AsyncSession = Depends(get_session)
-):
-    """User registration endpoint."""
-    repository = AuthRepository(session)
-
-    await repository.add_user(credentials.email, hash_password(credentials.password))
+async def me(user=Depends(verify_session())):
+    """Get the current authenticated user's information."""
+    metadata = await get_user_metadata(user.user_id)
+    return {
+        "user_id": user.user_id,
+        "email": user.user_id,
+        "metadata": metadata.metadata if metadata.metadata else {},
+    }

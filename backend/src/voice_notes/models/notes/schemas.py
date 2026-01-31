@@ -26,7 +26,7 @@ class NoteResponse(BaseModel):
     """Note response schema."""
 
     id: UUID
-    user_id: UUID
+    user_id: str
     title: str
     transcription: str
     tags: list[str]

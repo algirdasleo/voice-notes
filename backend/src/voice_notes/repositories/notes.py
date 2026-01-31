@@ -16,7 +16,7 @@ class NotesRepository:
         """Initialize repository with async session."""
         self.session = session
 
-    async def get_notes(self, user_id: UUID) -> list[Note]:
+    async def get_notes(self, user_id: str) -> list[Note]:
         """Fetch all voice notes from database."""
         result = await self.session.execute(select(Note).where(Note.user_id == user_id))
         return list(result.scalars().all())
