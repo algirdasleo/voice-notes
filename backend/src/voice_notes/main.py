@@ -47,8 +47,8 @@ app = FastAPI(lifespan=lifespan)
 init(
     app_info=InputAppInfo(
         app_name="VoiceNotes",
-        api_domain="http://localhost:8000",
-        website_domain="http://localhost:5173",
+        api_domain=settings.BACKEND_URL,
+        website_domain=settings.FRONTEND_URL,
         api_base_path="/auth",
     ),
     supertokens_config=SupertokensConfig(connection_uri="https://try.supertokens.io"),

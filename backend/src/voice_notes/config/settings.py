@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
 
+    # Application URLs
+    BACKEND_URL: str
+    FRONTEND_URL: str
+
     @property
     def DB_CONNECTION_STRING(self) -> str:
         """Construct database connection string from credentials."""
