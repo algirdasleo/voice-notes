@@ -20,6 +20,10 @@ jobs:
           bun install
           bun run build
           bunx firebase-tools deploy --only hosting --project ${{ secrets.FIREBASE_PROJECT_ID }} --token ${{ secrets.FIREBASE_TOKEN }}
+        env:
+          VITE_FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+          VITE_BACKEND_URL: ${{ vars.BACKEND_URL }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
 
   deploy-backend:
     name: Deploy Backend
