@@ -1,5 +1,7 @@
 # Voice Notes
 
+- Live url: https://voicenotes.framer.ai
+
 ## Project Overview
 
 Voice Notes is a full-stack application that enables users to record, manage, and interact with voice-based notes using AI. The application combines speech-to-text capabilities with advanced language models to provide intelligent note-taking and conversational AI features.
