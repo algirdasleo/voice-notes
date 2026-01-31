@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { AppLayout } from "./app-layout"
-import { ContentPage } from "@/pages/content"
+import { ContentPage } from "@/pages/dashboard/content"
 import { type ContentItem } from "@/types/content"
 
 const loadContent = async (): Promise<ContentItem[]> => {

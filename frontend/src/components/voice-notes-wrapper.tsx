@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { AppLayout } from "./app-layout"
-import { VoiceNotesPage } from "@/pages/voice-notes"
+import { VoiceNotesPage } from "@/pages/dashboard/voice-notes"
 import { type VoiceNote } from "@/types/voice-note"
 
 const loadVoiceNotes = async (): Promise<VoiceNote[]> => {
