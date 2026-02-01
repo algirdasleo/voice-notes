@@ -4,7 +4,11 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
+from fastapi.middleware.cors import CORSMiddleware
 from supertokens_python import InputAppInfo, SupertokensConfig, init
+from supertokens_python.framework.fastapi import (
+    get_middleware,
+)
 from supertokens_python.recipe import emailpassword, session, thirdparty, usermetadata
 from supertokens_python.recipe.thirdparty.provider import (
     ProviderClientConfig,
@@ -75,6 +79,16 @@ init(
             )
         ),
     ],
+)
+
+app.add_middleware(get_middleware())
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[settings.FRONTEND_URL],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(health.router, prefix="/health", tags=["Health Check"])
