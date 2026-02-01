@@ -1,6 +1,7 @@
 """Shared test fixtures and factory functions for testing."""
 
 from typing import AsyncIterator
+from unittest.mock import patch
 from uuid import UUID, uuid4
 
 import httpx
@@ -9,13 +10,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import StaticPool
 
-from voice_notes.api.dependencies import create_jwt, hash_password
 from voice_notes.main import app
 from voice_notes.models.content import GeneratedContent
 from voice_notes.models.notes import Note
 from voice_notes.models.shared import Base
-from voice_notes.models.users import User
 from voice_notes.services.database import get_session
+from supertokens_python.recipe.session.framework.fastapi import verify_session
 
 # ============================================================================
 # Database Fixtures
@@ -55,37 +55,38 @@ async def user_id() -> UUID:
     return uuid4()
 
 
-@pytest.fixture
-async def user(db: AsyncSession, user_id: UUID) -> User:
-    """Create a test user in the database."""
-    test_user = User(
-        id=user_id,
-        email="testuser@example.com",
-        password_hash=hash_password("testpassword"),
-    )
-    db.add(test_user)
-    await db.commit()
-    # Ensure attributes are loaded before returning from async context
-    await db.refresh(test_user)
-    return test_user
+
 
 
 @pytest.fixture
-def test_user(user: User) -> User:
-    """Alias for user fixture for backwards compatibility."""
-    return user
+async def auth_headers() -> dict:
+    """Create headers with SuperTokens session for authenticated requests."""
+    # With SuperTokens, session cookies are handled automatically by the SDK
+    # For testing, we would need to mock the session verification
+    # Return empty dict as SuperTokens middleware handles session validation
+    return {}
+
+
+# ============================================================================
+# Mock Session for Testing
+# ============================================================================
+
+
+class MockSessionContainer:
+    """Mock SuperTokens SessionContainer for testing."""
+
+    def __init__(self, user_id: UUID):
+        self.user_id = user_id
+
+    async def get_user_id(self) -> str:
+        """Return the user ID as string."""
+        return str(self.user_id)
 
 
 @pytest.fixture
-async def token(user_id: UUID) -> str:
-    """Create a valid access token for testing."""
-    return create_jwt(user_id, 600)
-
-
-@pytest.fixture
-async def auth_headers(token: str) -> dict:
-    """Create headers with access token for authenticated requests."""
-    return {"Authorization": f"Bearer {token}"}
+def mock_session(user_id: UUID):
+    """Create a mock SuperTokens session."""
+    return MockSessionContainer(user_id)
 
 
 # ============================================================================
@@ -140,17 +141,56 @@ async def create_content(
 # ============================================================================
 
 
+def verify_session_unauthorized():
+    """Mock function that raises unauthorized error."""
+    from fastapi import HTTPException, status
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Unauthorized"
+    )
+
+
 @pytest.fixture
-async def async_client(db: AsyncSession) -> AsyncIterator[httpx.AsyncClient]:
-    """Create an async test client with overridden dependencies."""
+async def async_client(
+    db: AsyncSession, mock_session
+) -> AsyncIterator[httpx.AsyncClient]:
+    """Create an async test client with authenticated session."""
+
+    async def get_session_override():
+        yield db
+
+    # Override verify_session to return mock_session
+    def verify_session_override():
+        return mock_session
+
+    app.dependency_overrides[get_session] = get_session_override
+    app.dependency_overrides[verify_session] = verify_session_override
+
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(
+        transport=transport, base_url="http://test"
+    ) as client:
+        yield client
+
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+async def async_client_unauth(
+    db: AsyncSession,
+) -> AsyncIterator[httpx.AsyncClient]:
+    """Create an async test client without authentication."""
 
     async def get_session_override():
         yield db
 
     app.dependency_overrides[get_session] = get_session_override
+    app.dependency_overrides[verify_session] = verify_session_unauthorized
 
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+    async with httpx.AsyncClient(
+        transport=transport, base_url="http://test"
+    ) as client:
         yield client
 
     app.dependency_overrides.clear()

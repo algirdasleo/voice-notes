@@ -33,9 +33,9 @@ class TestNotes:
         assert data["user_id"] == str(user_id)
 
     @pytest.mark.asyncio
-    async def test_create_note_requires_auth(self, async_client):
+    async def test_create_note_requires_auth(self, async_client_unauth):
         """Test creating a note without authentication fails."""
-        response = await async_client.post(
+        response = await async_client_unauth.post(
             "/notes/",
             json={
                 "title": "Test Note",
@@ -57,9 +57,9 @@ class TestNotes:
         assert isinstance(data["notes"], list)
 
     @pytest.mark.asyncio
-    async def test_get_notes_requires_auth(self, async_client):
+    async def test_get_notes_requires_auth(self, async_client_unauth):
         """Test getting notes without authentication fails."""
-        response = await async_client.get("/notes/")
+        response = await async_client_unauth.get("/notes/")
         assert response.status_code == 401
 
     @pytest.mark.asyncio

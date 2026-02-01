@@ -41,9 +41,9 @@ class TestContent:
         assert data["note_id"] == str(note.id)
 
     @pytest.mark.asyncio
-    async def test_create_content_requires_auth(self, async_client):
+    async def test_create_content_requires_auth(self, async_client_unauth):
         """Test creating content without authentication fails."""
-        response = await async_client.post(
+        response = await async_client_unauth.post(
             "/content/",
             json={
                 "note_id": str(uuid4()),

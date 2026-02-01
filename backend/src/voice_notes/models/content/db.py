@@ -26,7 +26,7 @@ class GeneratedContent(Base):
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     note_id: Mapped[UUID] = mapped_column(ForeignKey("note.id"))
-    user_id: Mapped[str] = mapped_column(ForeignKey("user.id"))
+    user_id: Mapped[str]
     title: Mapped[str] = mapped_column(String)
     content_type: Mapped[str] = mapped_column(String)
     body: Mapped[str] = mapped_column(String)

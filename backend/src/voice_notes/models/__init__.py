@@ -2,6 +2,5 @@
 
 from voice_notes.models.content import GeneratedContent
 from voice_notes.models.notes import Note
-from voice_notes.models.users import User
 
-__all__ = ["User", "Note", "GeneratedContent"]
+__all__ = ["Note", "GeneratedContent"]
