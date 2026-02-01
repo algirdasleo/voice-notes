@@ -17,10 +17,11 @@ export const VoiceNotesPage = ({ notes, isLoading = false }: VoiceNotesPageProps
     return (
       <div className="flex justify-center">
         <div className="w-full max-w-2xl space-y-4">
-          <div className="space-y-2">
-            <Skeleton className="h-10 w-full rounded-md" />
-            <Skeleton className="h-10 w-full rounded-md" />
-            <Skeleton className="h-10 w-full rounded-md" />
+          <div className="space-y-4">
+            <Skeleton className="h-17 w-full rounded-md" />
+            <Skeleton className="h-17 w-full rounded-md" />
+            <Skeleton className="h-17 w-full rounded-md" />
+            <Skeleton className="h-17 w-full rounded-md" />
           </div>
         </div>
       </div>

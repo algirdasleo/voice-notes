@@ -3,26 +3,43 @@ import { VoiceNotesPageWrapper } from "@/components/voice-notes-wrapper"
 import { ContentPageWrapper } from "@/components/content-wrapper"
 import { ChatPageWrapper } from "@/components/chat-wrapper"
 import { SettingsPageWrapper } from "@/components/settings-wrapper"
+import { OverviewPage } from "./pages/dashboard/overview"
+import { SigninPage } from "./pages/auth/signin"
+import { CallbackPage } from "./pages/auth/callback"
+import { ProtectedLayout } from "@/components/protected-layout"
 
 export const router = createBrowserRouter([
   {
-    path: "/",
-    element: <VoiceNotesPageWrapper />,
+    path: "/auth/signin",
+    element: <SigninPage />,
   },
   {
-    path: "/voice-notes",
-    element: <VoiceNotesPageWrapper />,
+    path: "/auth/callback/google",
+    element: <CallbackPage />,
   },
   {
-    path: "/content",
-    element: <ContentPageWrapper />,
-  },
-  {
-    path: "/chat",
-    element: <ChatPageWrapper />,
-  },
-  {
-    path: "/settings",
-    element: <SettingsPageWrapper />,
+    element: <ProtectedLayout />,
+    children: [
+      {
+        path: "/",
+        element: <OverviewPage />,
+      },
+      {
+        path: "/voice-notes",
+        element: <VoiceNotesPageWrapper />,
+      },
+      {
+        path: "/content",
+        element: <ContentPageWrapper />,
+      },
+      {
+        path: "/chat",
+        element: <ChatPageWrapper />,
+      },
+      {
+        path: "/settings",
+        element: <SettingsPageWrapper />,
+      },
+    ],
   },
 ])
