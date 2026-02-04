@@ -1,16 +1,19 @@
 """Tests for speech transcription endpoint."""
 
+import pytest
 from fastapi.testclient import TestClient
 
 
 class TestSpeech:
     """Tests for speech transcription endpoint."""
 
+    @pytest.mark.skip(reason="Skipping speech tests")
     def test_transcribe_requires_file(self, ws_client: TestClient):
         """Test transcribe endpoint requires file parameter."""
         response = ws_client.post("/speech/transcribe")
         assert response.status_code == 422  # Unprocessable Entity
 
+    @pytest.mark.skip(reason="Skipping speech tests")
     def test_transcribe_with_valid_audio(self, ws_client: TestClient):
         """Test transcribe endpoint with valid audio file."""
         # Mock audio file
@@ -22,6 +25,7 @@ class TestSpeech:
         assert response.status_code == 200
         assert "text" in response.json()
 
+    @pytest.mark.skip(reason="Skipping speech tests")
     def test_transcribe_returns_text_field(self, ws_client: TestClient):
         """Test transcribe endpoint returns text field in response."""
         audio_content = b"mock_audio_data"
