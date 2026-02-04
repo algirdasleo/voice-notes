@@ -1,6 +1,6 @@
 """Tests for notes endpoints."""
 
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +15,7 @@ class TestNotes:
     async def test_create_note(
         self,
         async_client,
-        user_id: UUID,
+        user_id: str,
         auth_headers: dict,
     ):
         """Test creating a new voice note."""
@@ -67,7 +67,7 @@ class TestNotes:
         self,
         async_client,
         db: AsyncSession,
-        user_id: UUID,
+        user_id: str,
         auth_headers: dict,
     ):
         """Test updating a voice note."""
@@ -99,7 +99,7 @@ class TestNotes:
         self,
         async_client,
         db: AsyncSession,
-        user_id: UUID,
+        user_id: str,
         auth_headers: dict,
     ):
         """Test deleting a voice note."""

@@ -50,12 +50,9 @@ async def db():
 
 
 @pytest.fixture
-async def user_id() -> UUID:
+async def user_id() -> str:
     """Generate a unique user ID for testing."""
-    return uuid4()
-
-
-
+    return str(uuid4())
 
 
 @pytest.fixture
@@ -75,16 +72,17 @@ async def auth_headers() -> dict:
 class MockSessionContainer:
     """Mock SuperTokens SessionContainer for testing."""
 
-    def __init__(self, user_id: UUID):
+    def __init__(self, user_id: str):
+        """Initialize with user ID."""
         self.user_id = user_id
 
     async def get_user_id(self) -> str:
         """Return the user ID as string."""
-        return str(self.user_id)
+        return self.user_id
 
 
 @pytest.fixture
-def mock_session(user_id: UUID):
+def mock_session(user_id: str):
     """Create a mock SuperTokens session."""
     return MockSessionContainer(user_id)
 
@@ -96,7 +94,7 @@ def mock_session(user_id: UUID):
 
 async def create_note(
     db: AsyncSession,
-    user_id: UUID,
+    user_id: str,
     title: str = "Test Note",
     transcription: str = "Test transcription",
 ) -> Note:
@@ -115,7 +113,7 @@ async def create_note(
 
 async def create_content(
     db: AsyncSession,
-    user_id: UUID,
+    user_id: str,
     note_id: UUID,
     title: str = "Generated Content",
     content_type: str = "Email",
@@ -144,10 +142,8 @@ async def create_content(
 def verify_session_unauthorized():
     """Mock function that raises unauthorized error."""
     from fastapi import HTTPException, status
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Unauthorized"
-    )
+
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
 
 
 @pytest.fixture

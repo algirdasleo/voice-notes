@@ -1,6 +1,6 @@
 """Tests for content endpoints."""
 
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,7 +19,7 @@ class TestContent:
         self,
         async_client,
         db: AsyncSession,
-        user_id: UUID,
+        user_id: str,
         auth_headers: dict,
     ):
         """Test creating generated content for a note."""
@@ -59,7 +59,7 @@ class TestContent:
         self,
         async_client,
         db: AsyncSession,
-        user_id: UUID,
+        user_id: str,
         auth_headers: dict,
     ):
         """Test getting all content for a note."""
@@ -89,7 +89,7 @@ class TestContent:
         self,
         async_client,
         db: AsyncSession,
-        user_id: UUID,
+        user_id: str,
         auth_headers: dict,
     ):
         """Test updating generated content."""
@@ -123,7 +123,7 @@ class TestContent:
         self,
         async_client,
         db: AsyncSession,
-        user_id: UUID,
+        user_id: str,
         auth_headers: dict,
     ):
         """Test deleting generated content."""
