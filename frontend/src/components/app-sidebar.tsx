@@ -112,15 +112,11 @@ export const AppSidebar = () => {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg">
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
-                <img 
-                  src="/logo-icon.png" 
-                  alt="VoiceNotes" 
-                  className="size-6 block dark:hidden" 
-                />
-                <img 
-                  src="/favicon-dark.png" 
-                  alt="VoiceNotes" 
-                  className="size-6 hidden dark:block" 
+                <img src="/logo-icon.png" alt="VoiceNotes" className="size-6 block dark:hidden" />
+                <img
+                  src="/favicon-dark.png"
+                  alt="VoiceNotes"
+                  className="size-6 hidden dark:block"
                 />
               </div>
               <span className="text-sm font-semibold">VoiceNotes</span>
