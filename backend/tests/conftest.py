@@ -9,8 +9,8 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from supertokens_python.recipe.session.framework.fastapi import verify_session
 
+from voice_notes.api.dependencies import get_current_user
 from voice_notes.main import app
 from voice_notes.models.content import GeneratedContent
 from voice_notes.models.notes import Note
@@ -195,7 +195,7 @@ async def async_client(
         return mock_session
 
     app.dependency_overrides[get_session] = get_session_override
-    app.dependency_overrides[verify_session] = verify_session_override
+    app.dependency_overrides[get_current_user] = verify_session_override
 
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
@@ -214,7 +214,7 @@ async def async_client_unauth(
         yield db
 
     app.dependency_overrides[get_session] = get_session_override
-    app.dependency_overrides[verify_session] = verify_session_unauthorized
+    app.dependency_overrides[get_current_user] = verify_session_unauthorized
 
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
