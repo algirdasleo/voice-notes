@@ -29,16 +29,15 @@ class Settings(BaseSettings):
     @property
     def DB_CONNECTION_STRING(self) -> str:
         """Construct database connection string from credentials."""
-        # If PostgreSQL credentials are provided, use them
-        if self.POSTGRES_USER and self.POSTGRES_PASSWORD:
-            return (
-                f"postgresql+asyncpg://{self.POSTGRES_USER}:"
-                f"{self.POSTGRES_PASSWORD.get_secret_value()}@db:5432/"
-                f"{self.POSTGRES_DB}"
+        if not (self.POSTGRES_USER and self.POSTGRES_PASSWORD):
+            raise ValueError(
+                "PostgreSQL credentials required. Set POSTGRES_USER and POSTGRES_PASSWORD."
             )
-
-        # Otherwise use SQLite
-        return "sqlite+aiosqlite:///./voice_notes.db"
+        return (
+            f"postgresql+asyncpg://{self.POSTGRES_USER}:"
+            f"{self.POSTGRES_PASSWORD.get_secret_value()}@db:5432/"
+            f"{self.POSTGRES_DB}"
+        )
 
     class Config:
         """BaseSettings configuration."""
