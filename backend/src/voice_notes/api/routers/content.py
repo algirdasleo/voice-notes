@@ -8,11 +8,41 @@ from supertokens_python.recipe.session import SessionContainer
 
 from voice_notes.api.dependencies import get_current_user
 from voice_notes.models.content import GeneratedContent
-from voice_notes.models.content.schemas import ContentCreate, ContentUpdate
+from voice_notes.models.content.schemas import (
+    ContentCreate,
+    ContentUpdate,
+    ContentWithNoteResponse,
+    NoteInfo,
+)
 from voice_notes.repositories.content import ContentRepository
 from voice_notes.services.database import get_session
 
 router = APIRouter()
+
+
+@router.get("/")
+async def get_all_content(
+    session: AsyncSession = Depends(get_session),
+    user: SessionContainer = Depends(get_current_user),
+) -> list[ContentWithNoteResponse]:
+    """Get all content for the current user with note details."""
+    content_repository = ContentRepository(session)
+    content_list = await content_repository.get_all_with_notes(user.user_id)
+
+    return [
+        ContentWithNoteResponse(
+            id=content.id,
+            title=content.title,
+            content_type=content.content_type,
+            body=content.body,
+            note=NoteInfo(
+                id=note_id,
+                title=note_title,
+                transcription=note_transcription,
+            ),
+        )
+        for content, note_id, note_title, note_transcription in content_list
+    ]
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)

@@ -2,6 +2,11 @@ import type { ContentItem, ContentCreate, ContentUpdate } from "@/types/content"
 import type { ApiResponse } from "@/types/api"
 import { apiFetch } from "./client"
 
+export async function getAllContent(): Promise<ContentItem[]> {
+  const response = await apiFetch<ContentItem[]>("/content")
+  return response.data || []
+}
+
 export async function createContent(payload: ContentCreate): Promise<ApiResponse<ContentItem>> {
   return apiFetch<ContentItem>("/content", {
     method: "POST",

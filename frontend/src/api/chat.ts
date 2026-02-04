@@ -1,4 +1,10 @@
-import type { ChatMessage, ChatRequest, ChatWebSocketHandlers } from "@/types/chat"
+import type { ChatMessage, ChatRequest, ChatWebSocketHandlers, ChatItem } from "@/types/chat"
+import { apiFetch } from "./client"
+
+export async function fetchChats(): Promise<ChatItem[]> {
+  const response = await apiFetch<ChatItem[]>("/chat")
+  return response.data || []
+}
 
 export function createChatWebSocket(sessionId?: string): WebSocket {
   const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"

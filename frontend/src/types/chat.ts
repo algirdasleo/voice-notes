@@ -7,6 +7,7 @@ export interface ChatItem {
 
 export interface ChatPageProps {
   chats?: ChatItem[]
+  isLoading?: boolean
 }
 export interface ChatMessage {
   type: "message" | "response" | "error" | "close"

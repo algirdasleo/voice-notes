@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from voice_notes.models.content import GeneratedContent
 from voice_notes.models.content.schemas import ContentUpdate
+from voice_notes.models.notes import Note
 
 
 class ContentRepository:
@@ -20,6 +21,21 @@ class ContentRepository:
         """Fetch all generated content from database."""
         result = await self.session.execute(select(GeneratedContent))
         return list(result.scalars().all())
+
+    async def get_all_with_notes(
+        self, user_id: str
+    ) -> list[tuple[GeneratedContent, UUID, str, str]]:
+        """Fetch all content with note info (id, title, transcription) for a specific user."""
+        query = (
+            select(GeneratedContent, Note.id, Note.title, Note.transcription)
+            .where(GeneratedContent.user_id == user_id)
+            .join(Note, GeneratedContent.note_id == Note.id)
+        )
+        result = await self.session.execute(query)
+        return [
+            (content, note_id, note_title, note_transcription)
+            for content, note_id, note_title, note_transcription in result.all()
+        ]
 
     async def get_by_id(self, content_id: UUID) -> GeneratedContent | None:
         """Fetch a single content by ID."""

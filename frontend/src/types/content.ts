@@ -1,11 +1,13 @@
 export interface ContentItem {
   id: string
-  note_id: string
-  user_id: string
   title: string
   content_type: string
   body: string
-  created_at: string
+  note: {
+    id: string
+    title: string
+    transcription: string
+  }
 }
 
 export interface ContentCreate {

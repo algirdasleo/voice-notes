@@ -15,6 +15,53 @@ class TestContent:
     """Tests for content endpoints."""
 
     @pytest.mark.asyncio
+    async def test_get_all_content_with_notes(
+        self,
+        async_client,
+        db: AsyncSession,
+        user_id: str,
+        auth_headers: dict,
+    ):
+        """Test getting all content with note details."""
+        note1 = await create_note(db, user_id, title="Note 1")
+        note2 = await create_note(db, user_id, title="Note 2")
+        await create_content(db, user_id, note1.id, title="Content 1")
+        await create_content(db, user_id, note2.id, title="Content 2")
+
+        response = await async_client.get(
+            "/content/",
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 2
+        assert data[0]["note"]["title"] == "Note 1"
+        assert data[1]["note"]["title"] == "Note 2"
+
+    @pytest.mark.asyncio
+    async def test_get_all_content_with_notes_empty(
+        self,
+        async_client,
+        auth_headers: dict,
+    ):
+        """Test getting all content when none exist."""
+        response = await async_client.get(
+            "/content/",
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        assert len(data) == 0
+
+    @pytest.mark.asyncio
+    async def test_get_all_content_requires_auth(self, async_client_unauth):
+        """Test getting all content without authentication fails."""
+        response = await async_client_unauth.get("/content/")
+        assert response.status_code == 401
+
+    @pytest.mark.asyncio
     async def test_create_content(
         self,
         async_client,

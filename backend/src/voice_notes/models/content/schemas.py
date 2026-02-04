@@ -33,3 +33,21 @@ class ContentResponse(BaseModel):
     content_type: str
     body: str
     created_at: date
+
+
+class NoteInfo(BaseModel):
+    """Note information for content response."""
+
+    id: UUID
+    title: str
+    transcription: str
+
+
+class ContentWithNoteResponse(BaseModel):
+    """Content response with note details."""
+
+    id: UUID
+    title: str
+    content_type: str
+    body: str
+    note: NoteInfo
