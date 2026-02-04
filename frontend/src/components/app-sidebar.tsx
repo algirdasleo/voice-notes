@@ -49,7 +49,7 @@ const DATA = {
   navMain: [
     {
       title: "Voice Notes",
-      url: "/voice-notes",
+      url: "/",
       icon: Mic,
     },
     {
