@@ -5,8 +5,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.framework.fastapi import verify_session
 
+from voice_notes.api.dependencies import get_current_user
 from voice_notes.models.notes import Note
 from voice_notes.models.notes.schemas import NoteCreate, NoteUpdate
 from voice_notes.repositories.notes import NotesRepository
@@ -19,7 +19,7 @@ router = APIRouter()
 async def create_note(
     note: NoteCreate,
     session: AsyncSession = Depends(get_session),
-    user: SessionContainer = Depends(verify_session),
+    user: SessionContainer = Depends(get_current_user),
 ):
     """Create a new voice note."""
     notes_repository = NotesRepository(session)
@@ -30,7 +30,7 @@ async def create_note(
 @router.get("/")
 async def get_notes(
     session: AsyncSession = Depends(get_session),
-    user: SessionContainer = Depends(verify_session),
+    user: SessionContainer = Depends(get_current_user),
 ):
     """Get all voice notes."""
     notes_repository = NotesRepository(session)
@@ -42,7 +42,7 @@ async def update_note(
     note_id: UUID,
     note: NoteUpdate,
     session: AsyncSession = Depends(get_session),
-    user: SessionContainer = Depends(verify_session),
+    user: SessionContainer = Depends(get_current_user),
 ):
     """Update a voice note by ID."""
     notes_repository = NotesRepository(session)
@@ -59,7 +59,7 @@ async def update_note(
 async def delete_note(
     note_id: UUID,
     session: AsyncSession = Depends(get_session),
-    user: SessionContainer = Depends(verify_session),
+    user: SessionContainer = Depends(get_current_user),
 ):
     """Delete a voice note by ID."""
     notes_repository = NotesRepository(session)

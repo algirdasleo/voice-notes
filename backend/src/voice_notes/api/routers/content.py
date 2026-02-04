@@ -5,8 +5,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.framework.fastapi import verify_session
 
+from voice_notes.api.dependencies import get_current_user
 from voice_notes.models.content import GeneratedContent
 from voice_notes.models.content.schemas import ContentCreate, ContentUpdate
 from voice_notes.repositories.content import ContentRepository
@@ -19,7 +19,7 @@ router = APIRouter()
 async def create_content(
     content: ContentCreate,
     session: AsyncSession = Depends(get_session),
-    user: SessionContainer = Depends(verify_session),
+    user: SessionContainer = Depends(get_current_user),
 ):
     """Create a new note content."""
     content_repository = ContentRepository(session)
@@ -31,7 +31,7 @@ async def create_content(
 async def get_contents(
     note_id: UUID,
     session: AsyncSession = Depends(get_session),
-    user: SessionContainer = Depends(verify_session),
+    user: SessionContainer = Depends(get_current_user),
 ):
     """Get all content for a specific note."""
     content_repository = ContentRepository(session)
@@ -49,7 +49,7 @@ async def update_content(
     content_id: UUID,
     content: ContentUpdate,
     session: AsyncSession = Depends(get_session),
-    user: SessionContainer = Depends(verify_session),
+    user: SessionContainer = Depends(get_current_user),
 ):
     """Update content by content ID."""
     content_repository = ContentRepository(session)
@@ -66,7 +66,7 @@ async def update_content(
 async def delete_content(
     content_id: UUID,
     session: AsyncSession = Depends(get_session),
-    user: SessionContainer = Depends(verify_session),
+    user: SessionContainer = Depends(get_current_user),
 ):
     """Delete content by ID."""
     content_repository = ContentRepository(session)
