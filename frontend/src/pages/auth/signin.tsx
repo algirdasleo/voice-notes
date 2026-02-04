@@ -186,10 +186,30 @@ export const SigninPage = () => {
     } catch (err: unknown) {
       const error = err as SuperTokensError
       setIsLoading(false)
+
       if (error.isSuperTokensGeneralError === true) {
-        setError(error.message || "An unexpected error occurred during Google sign in")
+        if (
+          error.message?.includes("clientId") ||
+          error.message?.includes("CLIENT_ID") ||
+          error.message?.includes("clientSecret")
+        ) {
+          setError(
+            "Google OAuth configuration issue. Please contact support. (OAuth credentials not properly configured)"
+          )
+        } else if (error.message?.includes("redirect")) {
+          setError(
+            "Redirect URL mismatch. Please ensure your sign-in origin is correctly configured. Contact support if the issue persists."
+          )
+        } else {
+          setError(
+            error.message ||
+              "Unable to initialize Google sign in. Please try again or contact support."
+          )
+        }
       } else {
-        setError("An unexpected error occurred. Please try again.")
+        setError(
+          "Unable to connect to Google authentication. Please check your internet connection and try again."
+        )
       }
     }
   }, [clearErrors])
