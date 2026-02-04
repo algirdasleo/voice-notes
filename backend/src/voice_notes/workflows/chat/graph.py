@@ -8,4 +8,5 @@ from voice_notes.workflows.chat.state import ChatWorkflowState
 
 def execute_chat_workflow(messages_history: list[BaseMessage]):
     """Invoke chat workflow graph."""
-    graph = StateGraph(ChatWorkflowState)
+    StateGraph(ChatWorkflowState)
+    ...
