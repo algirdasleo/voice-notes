@@ -49,7 +49,7 @@ export const VoiceNotesPage = ({ notes, isLoading = false }: VoiceNotesPageProps
                 variant="outline"
                 asChild
                 role="listitem"
-                className="hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="hover:bg-gray-100 dark:hover:bg-gray-800 bg-sidebar"
               >
                 <a href="#">
                   <ItemMedia variant="image">
@@ -62,14 +62,13 @@ export const VoiceNotesPage = ({ notes, isLoading = false }: VoiceNotesPageProps
                     />
                   </ItemMedia>
                   <ItemContent>
-                    <ItemTitle className="line-clamp-1">
-                      {note.title}
-                      {note.topic && (
-                        <span className="text-muted-foreground ml-2">• {note.topic}</span>
-                      )}
-                    </ItemTitle>
+                    <ItemTitle className="line-clamp-1">{note.title}</ItemTitle>
                     <div className="flex gap-2 mb-2">
-                      {note.date && <ItemDescription>{note.date}</ItemDescription>}
+                      {note.created_at && (
+                        <ItemDescription>
+                          {new Date(note.created_at).toLocaleDateString()}
+                        </ItemDescription>
+                      )}
                     </div>
                     {note.tags && note.tags.length > 0 && (
                       <div className="flex gap-1 flex-wrap">
@@ -80,9 +79,6 @@ export const VoiceNotesPage = ({ notes, isLoading = false }: VoiceNotesPageProps
                         ))}
                       </div>
                     )}
-                  </ItemContent>
-                  <ItemContent className="flex-none text-center">
-                    <ItemDescription>{note.duration}</ItemDescription>
                   </ItemContent>
                 </a>
               </Item>

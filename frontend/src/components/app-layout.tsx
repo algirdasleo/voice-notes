@@ -44,7 +44,6 @@ export const AppLayout = ({
         <header className="flex h-16 shrink-0 items-center gap-2 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <SidebarTrigger className="-ml-1" />
 
-          {/* Add flex-1 here to take up all remaining space */}
           <div className="flex flex-1 items-center justify-between">
             <Breadcrumb>
               <BreadcrumbList>
@@ -69,7 +68,7 @@ export const AppLayout = ({
             </div>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="flex flex-1 flex-col gap-4 px-4 py-5">
           {isLoading ? (
             <>
               <div className="grid auto-rows-min gap-4 md:grid-cols-3">
