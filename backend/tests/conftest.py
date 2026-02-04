@@ -1,34 +1,69 @@
 """Shared test fixtures and factory functions for testing."""
 
+import os
 from typing import AsyncIterator
-from unittest.mock import patch
 from uuid import UUID, uuid4
 
+import asyncpg
 import httpx
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.pool import StaticPool
+from supertokens_python.recipe.session.framework.fastapi import verify_session
 
 from voice_notes.main import app
 from voice_notes.models.content import GeneratedContent
 from voice_notes.models.notes import Note
 from voice_notes.models.shared import Base
 from voice_notes.services.database import get_session
-from supertokens_python.recipe.session.framework.fastapi import verify_session
+
+# ============================================================================
+# Constants
+# ============================================================================
+
+DEFAULT_DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres"
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    "postgresql+asyncpg://postgres:postgres@localhost:5432/voice_notes_test",
+)
+ASYNCPG_CONNECTION_PARAMS = {
+    "user": "postgres",
+    "password": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "database": "postgres",
+}
 
 # ============================================================================
 # Database Fixtures
 # ============================================================================
 
 
+@pytest.fixture(scope="session", autouse=True)
+async def cleanup_test_db():
+    """Create test database before tests, clean up after all tests are done."""
+    conn = await asyncpg.connect(**ASYNCPG_CONNECTION_PARAMS)
+    try:
+        await conn.execute("DROP DATABASE IF EXISTS voice_notes_test")
+        await conn.execute("CREATE DATABASE voice_notes_test")
+    finally:
+        await conn.close()
+
+    yield
+
+    conn = await asyncpg.connect(**ASYNCPG_CONNECTION_PARAMS)
+    try:
+        # Terminate all connections to voice_notes_test database
+        await conn.execute("DROP DATABASE IF EXISTS voice_notes_test")
+    finally:
+        await conn.close()
+
+
 @pytest.fixture
 async def db():
-    """Create an in-memory SQLite database for testing."""
+    """Create a PostgreSQL database connection for testing."""
     engine = create_async_engine(
-        "sqlite+aiosqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
+        TEST_DATABASE_URL,
         echo=False,
     )
 
@@ -163,9 +198,7 @@ async def async_client(
     app.dependency_overrides[verify_session] = verify_session_override
 
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(
-        transport=transport, base_url="http://test"
-    ) as client:
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
 
     app.dependency_overrides.clear()
@@ -184,9 +217,7 @@ async def async_client_unauth(
     app.dependency_overrides[verify_session] = verify_session_unauthorized
 
     transport = httpx.ASGITransport(app=app)
-    async with httpx.AsyncClient(
-        transport=transport, base_url="http://test"
-    ) as client:
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
 
     app.dependency_overrides.clear()
