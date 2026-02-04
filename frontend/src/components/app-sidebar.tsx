@@ -1,6 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import { useLocation, Link } from "react-router-dom"
+import Session from "supertokens-web-js/recipe/session"
 import {
   Sidebar,
   SidebarHeader,
@@ -85,9 +87,21 @@ const DATA = {
 export const AppSidebar = () => {
   const isMobile = useIsMobile()
   const location = useLocation()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const isItemActive = (itemUrl: string) => {
     return location.pathname.startsWith(itemUrl)
+  }
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      await Session.signOut()
+      window.location.href = "/auth/signin"
+    } catch (error) {
+      console.error("Logout failed:", error)
+      setIsLoggingOut(false)
+    }
   }
 
   return (
@@ -239,9 +253,9 @@ export const AppSidebar = () => {
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
                   <LogOut />
-                  Log out
+                  {isLoggingOut ? "Logging out..." : "Log out"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
