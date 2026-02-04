@@ -41,7 +41,7 @@ async def get_contents(
             status_code=status.HTTP_404_NOT_FOUND, detail="Content not found"
         )
 
-    return {"contents": content}
+    return content
 
 
 @router.put(f"/{{content_id}}")

@@ -72,8 +72,8 @@ class TestContent:
         )
         assert response.status_code == 200
         data = response.json()
-        assert "contents" in data
-        assert len(data["contents"]) == 1
+        assert isinstance(data, list)
+        assert len(data) == 1
 
     @pytest.mark.asyncio
     async def test_get_contents_not_found(self, async_client, auth_headers: dict):

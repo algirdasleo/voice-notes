@@ -53,8 +53,7 @@ class TestNotes:
         )
         assert response.status_code == 200
         data = response.json()
-        assert "notes" in data
-        assert isinstance(data["notes"], list)
+        assert isinstance(data, list)
 
     @pytest.mark.asyncio
     async def test_get_notes_requires_auth(self, async_client_unauth):

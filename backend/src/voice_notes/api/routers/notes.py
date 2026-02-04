@@ -34,7 +34,7 @@ async def get_notes(
 ):
     """Get all voice notes."""
     notes_repository = NotesRepository(session)
-    return {"notes": await notes_repository.get_notes(user.user_id)}
+    return await notes_repository.get_notes(user.user_id)
 
 
 @router.put(f"/{{note_id}}")
