@@ -1,5 +1,6 @@
 """API notes endpoints."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -18,6 +19,7 @@ from voice_notes.repositories.notes import NotesRepository
 from voice_notes.services.database import get_session
 from voice_notes.services.tags import suggest_tags_from_text
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -31,8 +33,13 @@ async def create_note(
     try:
         notes_repository = NotesRepository(session)
         db_note = Note(**note.model_dump(), user_id=user.user_id)
-        return await notes_repository.create(db_note)
+        created_note = await notes_repository.create(db_note)
+        logger.info(f"Note created successfully for user {user.user_id}")
+        return created_note
     except Exception as e:
+        logger.error(
+            f"Failed to create note for user {user.user_id}: {str(e)}", exc_info=True
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create note: {str(e)}",
@@ -47,8 +54,12 @@ async def suggest_tags(
     """Suggest tags for a given transcription text."""
     try:
         tags = await suggest_tags_from_text(request.text)
+        logger.info(f"Tags suggested successfully for user {user.user_id}")
         return SuggestTagsResponse(tags=tags)
     except Exception as e:
+        logger.error(
+            f"Failed to suggest tags for user {user.user_id}: {str(e)}", exc_info=True
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to suggest tags: {str(e)}",
@@ -63,8 +74,13 @@ async def get_notes(
     """Get all voice notes."""
     try:
         notes_repository = NotesRepository(session)
-        return await notes_repository.get_notes(user.user_id)
+        notes = await notes_repository.get_notes(user.user_id)
+        logger.info(f"Notes retrieved successfully for user {user.user_id}")
+        return notes
     except Exception as e:
+        logger.error(
+            f"Failed to get notes for user {user.user_id}: {str(e)}", exc_info=True
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get notes: {str(e)}",
@@ -83,14 +99,23 @@ async def update_note(
         notes_repository = NotesRepository(session)
         db_note = await notes_repository.get_by_note_id(note_id)
         if not db_note or db_note.user_id != user.user_id:
+            logger.warning(
+                f"Unauthorized update attempt for note {note_id} by user {user.user_id}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Note not found"
             )
 
-        return await notes_repository.update(note_id, note)
+        updated_note = await notes_repository.update(note_id, note)
+        logger.info(f"Note {note_id} updated successfully for user {user.user_id}")
+        return updated_note
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(
+            f"Failed to update note {note_id} for user {user.user_id}: {str(e)}",
+            exc_info=True,
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update note: {str(e)}",
@@ -108,14 +133,22 @@ async def delete_note(
         notes_repository = NotesRepository(session)
         db_note = await notes_repository.get_by_note_id(note_id)
         if not db_note or db_note.user_id != user.user_id:
+            logger.warning(
+                f"Unauthorized delete attempt for note {note_id} by user {user.user_id}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Note not found"
             )
 
         await notes_repository.delete(note_id)
+        logger.info(f"Note {note_id} deleted successfully for user {user.user_id}")
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(
+            f"Failed to delete note {note_id} for user {user.user_id}: {str(e)}",
+            exc_info=True,
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete note: {str(e)}",

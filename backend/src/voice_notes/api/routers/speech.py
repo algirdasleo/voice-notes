@@ -1,11 +1,14 @@
 """Speech API router module."""
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 
 from voice_notes.services.speech import transcribe_audio
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -17,8 +20,14 @@ async def transcribe_speech(
     """Endpoint to transcribe speech from an audio file."""
     try:
         audio_bytes = await file.read()
-        return {"text": await transcribe_audio(audio_bytes)}
+        result = await transcribe_audio(audio_bytes)
+        logger.info(f"Audio transcribed successfully for user {user.user_id}")
+        return {"text": result}
     except Exception as e:
+        logger.error(
+            f"Failed to transcribe speech for user {user.user_id}: {str(e)}",
+            exc_info=True,
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to transcribe speech: {str(e)}",

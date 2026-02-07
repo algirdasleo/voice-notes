@@ -1,5 +1,6 @@
 """API content endpoints."""
 
+import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -21,6 +22,7 @@ from voice_notes.repositories.notes import NotesRepository
 from voice_notes.services.content import ContentGenerationService
 from voice_notes.services.database import get_session
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -28,8 +30,10 @@ router = APIRouter()
 async def get_content_types() -> list[str]:
     """Get available content types."""
     try:
+        logger.info("Content types retrieved")
         return CONTENT_TYPES
     except Exception as e:
+        logger.error(f"Failed to get content types: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get content types: {str(e)}",
@@ -46,6 +50,7 @@ async def get_all_content(
         content_repository = ContentRepository(session)
         content_list = await content_repository.get_all_with_notes(user.user_id)
 
+        logger.info(f"All content retrieved successfully for user {user.user_id}")
         return [
             ContentWithNoteResponse(
                 id=content.id,
@@ -62,6 +67,9 @@ async def get_all_content(
             for content, note_id, note_title, note_transcription in content_list
         ]
     except Exception as e:
+        logger.error(
+            f"Failed to get content for user {user.user_id}: {str(e)}", exc_info=True
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get content: {str(e)}",
@@ -77,12 +85,18 @@ async def generate_content(
     """Generate content from selected voice notes using AI."""
     try:
         if not request.note_ids:
+            logger.warning(
+                f"Content generation request with no notes for user {user.user_id}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="At least one note must be selected.",
             )
 
         if request.content_type not in CONTENT_TYPES:
+            logger.warning(
+                f"Invalid content type '{request.content_type}' for user {user.user_id}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid content type. Must be one of: {CONTENT_TYPES}",
@@ -95,6 +109,9 @@ async def generate_content(
         for note_id in request.note_ids:
             note = await notes_repo.get_by_note_id(note_id)
             if not note or note.user_id != user.user_id:
+                logger.warning(
+                    f"Unauthorized note access attempt for note {note_id} by user {user.user_id}"
+                )
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Note {note_id} not found.",
@@ -113,10 +130,15 @@ async def generate_content(
             body=result["body"],
         )
         saved = await content_repo.create(db_content)
+        logger.info(f"Content generated successfully for user {user.user_id}")
         return saved
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(
+            f"Failed to generate content for user {user.user_id}: {str(e)}",
+            exc_info=True,
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate content: {str(e)}",
@@ -133,8 +155,13 @@ async def create_content(
     try:
         content_repository = ContentRepository(session)
         db_content = GeneratedContent(**content.model_dump(), user_id=user.user_id)
-        return await content_repository.create(db_content)
+        created = await content_repository.create(db_content)
+        logger.info(f"Content created successfully for user {user.user_id}")
+        return created
     except Exception as e:
+        logger.error(
+            f"Failed to create content for user {user.user_id}: {str(e)}", exc_info=True
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create content: {str(e)}",
@@ -152,14 +179,22 @@ async def get_contents(
         content_repository = ContentRepository(session)
         content = await content_repository.get_by_note_id(note_id)
         if not content or content[0].user_id != user.user_id:
+            logger.warning(
+                f"Unauthorized content access for note {note_id} by user {user.user_id}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Content not found"
             )
 
+        logger.info(f"Content retrieved for note {note_id} by user {user.user_id}")
         return content
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(
+            f"Failed to get content for note {note_id} for user {user.user_id}: {str(e)}",
+            exc_info=True,
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get content: {str(e)}",
@@ -178,14 +213,25 @@ async def update_content(
         content_repository = ContentRepository(session)
         db_content = await content_repository.get_by_id(content_id)
         if not db_content or db_content.user_id != user.user_id:
+            logger.warning(
+                f"Unauthorized update attempt for content {content_id} by user {user.user_id}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Content not found"
             )
 
-        return await content_repository.update(content_id, content)
+        updated = await content_repository.update(content_id, content)
+        logger.info(
+            f"Content {content_id} updated successfully for user {user.user_id}"
+        )
+        return updated
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(
+            f"Failed to update content {content_id} for user {user.user_id}: {str(e)}",
+            exc_info=True,
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update content: {str(e)}",
@@ -203,14 +249,24 @@ async def delete_content(
         content_repository = ContentRepository(session)
         content = await content_repository.get_by_id(content_id)
         if not content or content.user_id != user.user_id:
+            logger.warning(
+                f"Unauthorized delete attempt for content {content_id} by user {user.user_id}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Content not found"
             )
 
         await content_repository.delete(content_id)
+        logger.info(
+            f"Content {content_id} deleted successfully for user {user.user_id}"
+        )
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(
+            f"Failed to delete content {content_id} for user {user.user_id}: {str(e)}",
+            exc_info=True,
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete content: {str(e)}",
