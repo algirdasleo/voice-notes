@@ -23,9 +23,9 @@ class ContentRepository:
         return list(result.scalars().all())
 
     async def get_all_with_notes(
-        self, user_id: str
+        self, user_id: str, content_type: str | None = None
     ) -> list[tuple[GeneratedContent, UUID, str, str]]:
-        """Fetch all content with note info (id, title, transcription) for a specific user."""
+        """Fetch all content with note info (id, title, transcription) for a specific user, optionally filtered by content type."""
         query = (
             select(
                 GeneratedContent,
@@ -36,6 +36,8 @@ class ContentRepository:
             .where(GeneratedContent.user_id == user_id)
             .join(Note, GeneratedContent.note_id == Note.id)
         )
+        if content_type:
+            query = query.where(GeneratedContent.content_type == content_type)
         result = await self.session.execute(query)
         return [
             (content, note_id, note_title, note_transcription)

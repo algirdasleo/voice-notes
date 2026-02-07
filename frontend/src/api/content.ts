@@ -7,8 +7,11 @@ import type {
 import type { ApiResponse } from "@/types/api"
 import { apiFetch } from "./client"
 
-export async function getAllContent(): Promise<ContentItem[]> {
-  const response = await apiFetch<ContentItem[]>("/content")
+export async function getAllContent(contentType?: string): Promise<ContentItem[]> {
+  const params = new URLSearchParams()
+  if (contentType) params.set("content_type", contentType)
+  const query = params.toString()
+  const response = await apiFetch<ContentItem[]>(`/content${query ? `?${query}` : ""}`)
   return response.data || []
 }
 

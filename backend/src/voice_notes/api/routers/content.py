@@ -3,7 +3,7 @@
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from supertokens_python.recipe.session import SessionContainer
 
@@ -42,13 +42,16 @@ async def get_content_types() -> list[str]:
 
 @router.get("/")
 async def get_all_content(
+    content_type: str | None = Query(None, description="Filter content by type"),
     session: AsyncSession = Depends(get_session),
     user: SessionContainer = Depends(get_current_user),
 ) -> list[ContentWithNoteResponse]:
-    """Get all content for the current user with note details."""
+    """Get all content for the current user with note details, optionally filtered by content type."""
     try:
         content_repository = ContentRepository(session)
-        content_list = await content_repository.get_all_with_notes(user.user_id)
+        content_list = await content_repository.get_all_with_notes(
+            user.user_id, content_type=content_type
+        )
 
         logger.info(f"All content retrieved successfully for user {user.user_id}")
         return [
