@@ -313,7 +313,16 @@ export const LiveWaveform = ({
       cleanupOwnedStream()
       cleanupAudio()
     }
-  }, [active, deviceId, externalStream, fftSize, smoothingTimeConstant, onError, onStreamReady, onStreamEnd])
+  }, [
+    active,
+    deviceId,
+    externalStream,
+    fftSize,
+    smoothingTimeConstant,
+    onError,
+    onStreamReady,
+    onStreamEnd,
+  ])
 
   // Animation loop
   useEffect(() => {
