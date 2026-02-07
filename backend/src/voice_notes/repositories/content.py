@@ -32,7 +32,6 @@ class ContentRepository:
                 Note.id,
                 Note.title,
                 Note.transcription,
-                Note.created_at,
             )
             .where(GeneratedContent.user_id == user_id)
             .join(Note, GeneratedContent.note_id == Note.id)
