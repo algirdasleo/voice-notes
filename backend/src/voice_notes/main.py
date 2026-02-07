@@ -2,10 +2,16 @@
 
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.concurrency import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-from supertokens_python import InputAppInfo, SupertokensConfig, init
+from fastapi.responses import JSONResponse
+from supertokens_python import (
+    InputAppInfo,
+    SupertokensConfig,
+    get_all_cors_headers,
+    init,
+)
 from supertokens_python.framework.fastapi import (
     get_middleware,
 )
@@ -87,9 +93,20 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.VITE_FRONTEND_URL],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["Content-Type"] + get_all_cors_headers(),
 )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Catch-all handler so error responses go through CORS middleware."""
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"},
+    )
+
 
 app.include_router(health.router, prefix="/health", tags=["Health Check"])
 app.include_router(notes.router, prefix="/notes", tags=["Voice Notes"])
