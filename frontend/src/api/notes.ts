@@ -14,8 +14,11 @@ export async function createNote(payload: VoiceNoteCreate): Promise<ApiResponse<
   })
 }
 
-export async function getNotes(): Promise<ApiResponse<VoiceNote[]>> {
-  return apiFetch<VoiceNote[]>("/notes")
+export async function getNotes(tag?: string): Promise<ApiResponse<VoiceNote[]>> {
+  const params = new URLSearchParams()
+  if (tag) params.set("tag", tag)
+  const query = params.toString()
+  return apiFetch<VoiceNote[]>(`/notes${query ? `?${query}` : ""}`)
 }
 
 export async function getNoteById(noteId: string): Promise<ApiResponse<VoiceNote>> {

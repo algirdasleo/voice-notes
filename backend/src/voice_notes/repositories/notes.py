@@ -2,7 +2,8 @@
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import cast, select, type_coerce
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from voice_notes.models.notes import Note
@@ -16,9 +17,15 @@ class NotesRepository:
         """Initialize repository with async session."""
         self.session = session
 
-    async def get_notes(self, user_id: str) -> list[Note]:
-        """Fetch all voice notes from database."""
-        result = await self.session.execute(select(Note).where(Note.user_id == user_id))
+    async def get_notes(self, user_id: str, tag: str | None = None) -> list[Note]:
+        """Fetch all voice notes from database, optionally filtered by tag."""
+        query = select(Note).where(Note.user_id == user_id)
+        if tag:
+            # Cast JSON → JSONB so the @> containment operator works
+            query = query.where(
+                cast(Note.tags, JSONB).contains(type_coerce([tag], JSONB))
+            )
+        result = await self.session.execute(query)
         return list(result.scalars().all())
 
     async def get_by_note_id(self, note_id: UUID) -> Note | None:

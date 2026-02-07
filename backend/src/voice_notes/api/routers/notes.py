@@ -3,7 +3,7 @@
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from supertokens_python.recipe.session import SessionContainer
 
@@ -68,13 +68,14 @@ async def suggest_tags(
 
 @router.get("/")
 async def get_notes(
+    tag: str | None = Query(None, description="Filter notes by tag"),
     session: AsyncSession = Depends(get_session),
     user: SessionContainer = Depends(get_current_user),
 ):
-    """Get all voice notes."""
+    """Get all voice notes, optionally filtered by tag."""
     try:
         notes_repository = NotesRepository(session)
-        notes = await notes_repository.get_notes(user.user_id)
+        notes = await notes_repository.get_notes(user.user_id, tag=tag)
         logger.info(f"Notes retrieved successfully for user {user.user_id}")
         return notes
     except Exception as e:
