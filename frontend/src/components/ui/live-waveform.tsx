@@ -8,6 +8,8 @@ export type LiveWaveformProps = HTMLAttributes<HTMLDivElement> & {
   active?: boolean
   processing?: boolean
   deviceId?: string
+  /** If provided, uses this stream instead of calling getUserMedia. The caller owns the stream lifecycle. */
+  stream?: MediaStream | null
   barWidth?: number
   barHeight?: number
   barGap?: number
@@ -31,6 +33,7 @@ export const LiveWaveform = ({
   active = false,
   processing = false,
   deviceId,
+  stream: externalStream,
   barWidth = 3,
   barGap = 1,
   barRadius = 1.5,
@@ -208,51 +211,87 @@ export const LiveWaveform = ({
 
   // Handle microphone setup and teardown
   useEffect(() => {
-    if (!active) {
+    let cancelled = false
+
+    // Helper to clean up only streams we own (not external ones)
+    const cleanupOwnedStream = () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop())
         streamRef.current = null
         onStreamEnd?.()
       }
+    }
+
+    const cleanupAudio = () => {
       if (audioContextRef.current && audioContextRef.current.state !== "closed") {
         audioContextRef.current.close()
         audioContextRef.current = null
       }
+      analyserRef.current = null
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
         animationRef.current = 0
       }
+    }
+
+    if (!active) {
+      cleanupOwnedStream()
+      cleanupAudio()
       return
     }
 
-    const setupMicrophone = async () => {
+    const setupAudio = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: deviceId
-            ? {
-                deviceId: { exact: deviceId },
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true,
-              }
-            : {
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true,
-              },
-        })
-        streamRef.current = stream
-        onStreamReady?.(stream)
+        let micStream: MediaStream
+
+        if (externalStream) {
+          // Use the caller-provided stream — don't open our own getUserMedia
+          micStream = externalStream
+        } else {
+          // Open our own stream
+          micStream = await navigator.mediaDevices.getUserMedia({
+            audio: deviceId
+              ? {
+                  deviceId: { exact: deviceId },
+                  echoCancellation: true,
+                  noiseSuppression: true,
+                  autoGainControl: true,
+                }
+              : {
+                  echoCancellation: true,
+                  noiseSuppression: true,
+                  autoGainControl: true,
+                },
+          })
+
+          // If the effect was cleaned up while getUserMedia was pending, stop immediately
+          if (cancelled) {
+            micStream.getTracks().forEach(track => track.stop())
+            return
+          }
+
+          // Track streams we own so cleanup can stop them
+          streamRef.current = micStream
+        }
+
+        onStreamReady?.(micStream)
 
         const AudioContextConstructor =
           window.AudioContext ||
           (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
         const audioContext = new AudioContextConstructor()
+
+        if (cancelled) {
+          audioContext.close()
+          cleanupOwnedStream()
+          return
+        }
+
         const analyser = audioContext.createAnalyser()
         analyser.fftSize = fftSize
         analyser.smoothingTimeConstant = smoothingTimeConstant
 
-        const source = audioContext.createMediaStreamSource(stream)
+        const source = audioContext.createMediaStreamSource(micStream)
         source.connect(analyser)
 
         audioContextRef.current = audioContext
@@ -261,28 +300,20 @@ export const LiveWaveform = ({
         // Clear history when starting
         historyRef.current = []
       } catch (error) {
-        onError?.(error as Error)
+        if (!cancelled) {
+          onError?.(error as Error)
+        }
       }
     }
 
-    setupMicrophone()
+    setupAudio()
 
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop())
-        streamRef.current = null
-        onStreamEnd?.()
-      }
-      if (audioContextRef.current && audioContextRef.current.state !== "closed") {
-        audioContextRef.current.close()
-        audioContextRef.current = null
-      }
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
-        animationRef.current = 0
-      }
+      cancelled = true
+      cleanupOwnedStream()
+      cleanupAudio()
     }
-  }, [active, deviceId, fftSize, smoothingTimeConstant, onError, onStreamReady, onStreamEnd])
+  }, [active, deviceId, externalStream, fftSize, smoothingTimeConstant, onError, onStreamReady, onStreamEnd])
 
   // Animation loop
   useEffect(() => {

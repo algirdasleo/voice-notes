@@ -16,10 +16,20 @@ export function MicSelectorDemo({ onRecordingComplete, disabled = false }: MicSe
   const [isMuted, setIsMuted] = useState(false)
   const [state, setState] = useState<RecordingState>("idle")
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
+  const [activeStream, setActiveStream] = useState<MediaStream | null>(null)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const audioElementRef = useRef<HTMLAudioElement | null>(null)
+
+  const stopStreamTracks = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop())
+      streamRef.current = null
+    }
+    setActiveStream(null)
+  }, [])
 
   const startRecording = useCallback(async () => {
     try {
@@ -28,6 +38,8 @@ export function MicSelectorDemo({ onRecordingComplete, disabled = false }: MicSe
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: selectedDevice ? { deviceId: { exact: selectedDevice } } : true,
       })
+      streamRef.current = stream
+      setActiveStream(stream)
 
       const mediaRecorder = new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
@@ -42,7 +54,7 @@ export function MicSelectorDemo({ onRecordingComplete, disabled = false }: MicSe
       mediaRecorder.onstop = () => {
         const blob = new Blob(audioChunksRef.current, { type: "audio/webm" })
         setAudioBlob(blob)
-        stream.getTracks().forEach(track => track.stop())
+        stopStreamTracks()
         setState("recorded")
       }
 
@@ -50,9 +62,10 @@ export function MicSelectorDemo({ onRecordingComplete, disabled = false }: MicSe
       setState("recording")
     } catch (error) {
       console.error("Error starting recording:", error)
+      stopStreamTracks()
       setState("idle")
     }
-  }, [selectedDevice])
+  }, [selectedDevice, stopStreamTracks])
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && state === "recording") {
@@ -101,8 +114,13 @@ export function MicSelectorDemo({ onRecordingComplete, disabled = false }: MicSe
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (mediaRecorderRef.current) {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
         mediaRecorderRef.current.stop()
+      }
+      // Directly stop stream tracks to ensure mic is released immediately
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+        streamRef.current = null
       }
       if (audioElementRef.current) {
         audioElementRef.current.pause()
@@ -132,6 +150,7 @@ export function MicSelectorDemo({ onRecordingComplete, disabled = false }: MicSe
                       key={state}
                       active={showWaveform}
                       processing={showProcessing}
+                      stream={activeStream}
                       deviceId={selectedDevice}
                       barWidth={3}
                       barGap={1}
