@@ -350,8 +350,8 @@ export const VoiceNotesPage = ({
 
   return (
     <>
-      <div className="flex flex-col items-center w-full min-h-screen">
-        <div className="flex justify-center w-full flex-1">
+      <div className="flex flex-col items-center w-full flex-1 min-h-0">
+        <div className="flex justify-center w-full flex-1 min-h-0 overflow-y-auto">
           <div className="flex w-full max-w-3xl flex-col gap-4">
             {/* Transcribing indicator */}
             <AnimatePresence>
@@ -691,7 +691,7 @@ export const VoiceNotesPage = ({
         </div>
 
         {/* Recorder */}
-        <div className="w-full mb-8">
+        <div className="w-full shrink-0">
           <MicSelectorDemo
             onRecordingComplete={handleRecordingComplete}
             disabled={step === "transcribing"}

@@ -68,7 +68,7 @@ export const AppLayout = ({
             </div>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 px-4 py-5">
+        <div className="flex flex-1 flex-col gap-4 px-4 pt-5 pb-2 overflow-hidden min-h-0">
           {isLoading ? (
             <>
               <div className="grid auto-rows-min gap-4 md:grid-cols-3">
