@@ -18,6 +18,11 @@ export interface ContentCreate {
   body: string
 }
 
+export interface ContentGenerateRequest {
+  note_ids: string[]
+  content_type: string
+}
+
 export interface ContentUpdate {
   title?: string
   content_type?: string
@@ -27,4 +32,6 @@ export interface ContentUpdate {
 export interface ContentPageProps {
   content?: ContentItem[]
   isLoading?: boolean
+  onCreateClick?: () => void
+  onDelete?: (contentId: string) => void
 }
