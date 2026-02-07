@@ -27,6 +27,8 @@ export interface VoiceNotesPageProps {
   notes?: VoiceNote[]
   isLoading?: boolean
   onNoteCreated?: () => void
+  onNoteUpdated?: () => void
+  onNoteDeleted?: () => void
 }
 
 export type CreationStep = "idle" | "transcribing" | "review"

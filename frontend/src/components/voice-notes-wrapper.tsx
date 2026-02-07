@@ -37,7 +37,13 @@ export function VoiceNotesPageWrapper() {
         </Button>
       }
     >
-      <VoiceNotesPage notes={notes ?? undefined} isLoading={isLoading} onNoteCreated={fetchNotes} />
+      <VoiceNotesPage
+        notes={notes ?? undefined}
+        isLoading={isLoading}
+        onNoteCreated={fetchNotes}
+        onNoteUpdated={fetchNotes}
+        onNoteDeleted={fetchNotes}
+      />
     </AppLayout>
   )
 }

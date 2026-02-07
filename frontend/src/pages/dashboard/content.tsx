@@ -144,13 +144,13 @@ export const ContentPage = ({ content, isLoading = false, onDelete }: ContentPag
           <DialogContent className="sm:max-w-2xl max-h-[85vh]">
             {selectedContent && (
               <>
+                <DialogTitle className="flex items-center gap-2">
+                  <span className="text-xl">
+                    {getContentTypeIcon(selectedContent.content_type)}
+                  </span>
+                  {selectedContent.title}
+                </DialogTitle>
                 <DialogHeader>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">
-                      {getContentTypeIcon(selectedContent.content_type)}
-                    </span>
-                    <DialogTitle>{selectedContent.title}</DialogTitle>
-                  </div>
                   <DialogDescription className="flex items-center gap-3 pt-1">
                     <Badge variant={getContentTypeColor(selectedContent.content_type)}>
                       {selectedContent.content_type}
