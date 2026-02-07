@@ -15,6 +15,13 @@ class ContentCreate(BaseModel):
     body: str
 
 
+class ContentGenerateRequest(BaseModel):
+    """Request schema for generating content from voice notes."""
+
+    note_ids: list[UUID]
+    content_type: str
+
+
 class ContentUpdate(BaseModel):
     """Update content request schema."""
 

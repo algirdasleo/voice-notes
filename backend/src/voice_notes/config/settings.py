@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     # API key for AI services
     OPENAI_API_KEY: SecretStr
+    CHAT_MODEL: str = "gpt-5.1-mini"
 
     # Hugging Face access token for transcribtion model
     HF_ACCESS_TOKEN: SecretStr
