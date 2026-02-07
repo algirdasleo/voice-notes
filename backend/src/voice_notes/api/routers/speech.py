@@ -4,8 +4,8 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from supertokens_python.recipe.session import SessionContainer
-from supertokens_python.recipe.session.framework.fastapi import verify_session
 
+from voice_notes.api.dependencies import get_current_user
 from voice_notes.services.speech import transcribe_audio
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ router = APIRouter()
 @router.post("/transcribe")
 async def transcribe_speech(
     file: UploadFile,
-    user: SessionContainer = Depends(verify_session),
+    user: SessionContainer = Depends(get_current_user),
 ):
     """Endpoint to transcribe speech from an audio file."""
     try:
