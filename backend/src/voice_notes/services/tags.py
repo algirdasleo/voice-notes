@@ -22,7 +22,6 @@ async def suggest_tags_from_text(text: str) -> list[str]:
             instructions=TAG_SUGGESTION_SYSTEM_PROMPT,
             input=text,
             text_format=SuggestedTags,
-            temperature=0.5,
         )
 
         result = response.output_parsed

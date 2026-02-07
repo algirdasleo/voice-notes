@@ -59,7 +59,6 @@ class ContentGenerationService:
                 instructions=system_prompt,
                 input=user_input,
                 text_format=GeneratedContentResponse,
-                temperature=0.7,
             )
 
             result = response.output_parsed

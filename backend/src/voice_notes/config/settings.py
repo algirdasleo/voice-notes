@@ -11,13 +11,14 @@ class Settings(BaseSettings):
     # API key for AI services
     OPENAI_API_KEY: SecretStr
     STT_MODEL: str = "whisper-1"
-    CHAT_MODEL: str = "gpt-5.1-mini"
+    CHAT_MODEL: str = "gpt-5-mini"
 
     # Database credentials
     POSTGRES_USER: str | None = None
     POSTGRES_PASSWORD: SecretStr | None = None
     POSTGRES_DB: str = "voice_notes"
     POSTGRES_HOST: str = "db"
+    POSTGRES_PORT: int = 5432
 
     # Google OAuth credentials
     GOOGLE_CLIENT_ID: SecretStr
@@ -36,7 +37,7 @@ class Settings(BaseSettings):
             )
         return (
             f"postgresql+asyncpg://{self.POSTGRES_USER}:"
-            f"{self.POSTGRES_PASSWORD.get_secret_value()}@{self.POSTGRES_HOST}:5432/"
+            f"{self.POSTGRES_PASSWORD.get_secret_value()}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/"
             f"{self.POSTGRES_DB}"
         )
 
