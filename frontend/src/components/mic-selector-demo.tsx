@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { Pause, Play, Trash2 } from "lucide-react"
+import { Pause, Play, Trash2, Send } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -9,10 +9,9 @@ import { Card } from "@/components/ui/card"
 import { LiveWaveform } from "@/components/ui/live-waveform"
 import { MicSelector } from "@/components/ui/mic-selector"
 import { Separator } from "@/components/ui/separator"
+import { type RecordingState, type MicSelectorDemoProps } from "@/types/mic-selector"
 
-type RecordingState = "idle" | "loading" | "recording" | "recorded" | "playing"
-
-export function MicSelectorDemo() {
+export function MicSelectorDemo({ onRecordingComplete, disabled = false }: MicSelectorDemoProps) {
   const [selectedDevice, setSelectedDevice] = useState<string>("")
   const [isMuted, setIsMuted] = useState(false)
   const [state, setState] = useState<RecordingState>("idle")
@@ -222,6 +221,25 @@ export function MicSelectorDemo() {
               >
                 <Trash2 className="size-5" />
               </Button>
+              {audioBlob && (state === "recorded" || state === "playing") && (
+                <>
+                  <Separator orientation="vertical" className="mx-1 -my-2.5" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (audioBlob && onRecordingComplete) {
+                        onRecordingComplete(audioBlob)
+                        restart()
+                      }
+                    }}
+                    disabled={disabled}
+                    aria-label="Send recording"
+                  >
+                    <Send className="size-5" />
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>

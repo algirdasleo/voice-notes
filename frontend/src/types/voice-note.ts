@@ -19,7 +19,14 @@ export interface VoiceNoteUpdate {
   tags?: string[]
 }
 
+export interface SuggestTagsResponse {
+  tags: string[]
+}
+
 export interface VoiceNotesPageProps {
   notes?: VoiceNote[]
   isLoading?: boolean
+  onNoteCreated?: () => void
 }
+
+export type CreationStep = "idle" | "transcribing" | "review"

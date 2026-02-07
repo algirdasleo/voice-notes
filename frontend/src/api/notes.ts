@@ -1,4 +1,9 @@
-import type { VoiceNote, VoiceNoteCreate, VoiceNoteUpdate } from "@/types/voice-note"
+import type {
+  VoiceNote,
+  VoiceNoteCreate,
+  VoiceNoteUpdate,
+  SuggestTagsResponse,
+} from "@/types/voice-note"
 import type { ApiResponse } from "@/types/api"
 import { apiFetch } from "./client"
 
@@ -29,4 +34,11 @@ export async function updateNote(
 
 export async function deleteNote(noteId: string): Promise<ApiResponse<void>> {
   return apiFetch<void>(`/notes/${noteId}`, { method: "DELETE" })
+}
+
+export async function suggestTags(text: string): Promise<ApiResponse<SuggestTagsResponse>> {
+  return apiFetch<SuggestTagsResponse>("/notes/suggest-tags", {
+    method: "POST",
+    body: JSON.stringify({ text }),
+  })
 }

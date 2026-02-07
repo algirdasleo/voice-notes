@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { AppLayout } from "./app-layout"
@@ -10,21 +10,22 @@ export function VoiceNotesPageWrapper() {
   const [notes, setNotes] = useState<VoiceNote[] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchNotes = async () => {
-      try {
-        const response = await getNotes()
-        setNotes(response.data || null)
-      } catch (error) {
-        console.error("Failed to load notes:", error)
-        setNotes(null)
-      } finally {
-        setIsLoading(false)
-      }
+  const fetchNotes = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const response = await getNotes()
+      setNotes(response.data || null)
+    } catch (error) {
+      console.error("Failed to load notes:", error)
+      setNotes(null)
+    } finally {
+      setIsLoading(false)
     }
-
-    fetchNotes()
   }, [])
+
+  useEffect(() => {
+    fetchNotes()
+  }, [fetchNotes])
 
   return (
     <AppLayout
@@ -36,7 +37,7 @@ export function VoiceNotesPageWrapper() {
         </Button>
       }
     >
-      <VoiceNotesPage notes={notes ?? undefined} isLoading={isLoading} />
+      <VoiceNotesPage notes={notes ?? undefined} isLoading={isLoading} onNoteCreated={fetchNotes} />
     </AppLayout>
   )
 }
