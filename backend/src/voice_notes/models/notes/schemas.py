@@ -31,3 +31,15 @@ class NoteResponse(BaseModel):
     transcription: str
     tags: list[str]
     created_at: date
+
+
+class SuggestTagsRequest(BaseModel):
+    """Request schema for tag suggestion."""
+
+    text: str
+
+
+class SuggestTagsResponse(BaseModel):
+    """Response schema for tag suggestion."""
+
+    tags: list[str]

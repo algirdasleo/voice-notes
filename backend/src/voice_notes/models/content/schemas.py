@@ -3,7 +3,7 @@
 from datetime import date
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ContentCreate(BaseModel):
@@ -59,3 +59,10 @@ class ContentWithNoteResponse(BaseModel):
     body: str
     created_at: date
     note: NoteInfo
+
+
+class GeneratedContentResponse(BaseModel):
+    """Structured output model for generated content."""
+
+    title: str = Field(description="A short, descriptive title (max 8 words).")
+    body: str = Field(description="The full generated content in markdown format.")

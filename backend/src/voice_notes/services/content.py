@@ -1,12 +1,12 @@
-"""Content generation service using LangChain and OpenAI."""
+"""Content generation service using OpenAI Responses API."""
 
 import logging
 
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
+from openai import AsyncOpenAI
 
 from voice_notes.config.prompts import CONTENT_TYPE_PROMPTS
 from voice_notes.config.settings import get_settings
+from voice_notes.models.content.schemas import GeneratedContentResponse
 
 logger = logging.getLogger(__name__)
 
@@ -17,11 +17,8 @@ class ContentGenerationService:
     def __init__(self) -> None:
         """Initialize the content generation service."""
         settings = get_settings()
-        self.llm = ChatOpenAI(
-            model=settings.CHAT_MODEL,
-            api_key=settings.OPENAI_API_KEY,
-            temperature=0.7,
-        )
+        self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY.get_secret_value())
+        self.model = settings.CHAT_MODEL
 
     async def generate(
         self,
@@ -37,49 +34,42 @@ class ContentGenerationService:
         Returns:
             Dict with 'title' and 'body' of the generated content.
         """
-        system_prompt = CONTENT_TYPE_PROMPTS.get(
+        base_prompt = CONTENT_TYPE_PROMPTS.get(
             content_type, CONTENT_TYPE_PROMPTS["Custom Prompt"]
+        )
+
+        system_prompt = (
+            f"{base_prompt}\n\n"
+            "Return a JSON object with a short descriptive title (max 8 words) "
+            "and the full generated content body in markdown format."
         )
 
         notes_text = "\n\n".join(
             f"--- Note: {t['title']} ---\n{t['text']}" for t in transcriptions
         )
 
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", system_prompt),
-                (
-                    "human",
-                    "Here are the voice note transcriptions:\n\n{notes}\n\n"
-                    "Generate the {content_type} now.",
-                ),
-            ]
+        user_input = (
+            f"Here are the voice note transcriptions:\n\n{notes_text}\n\n"
+            f"Generate the {content_type} now."
         )
 
-        chain = prompt | self.llm
-        response = await chain.ainvoke(
-            {"notes": notes_text, "content_type": content_type}
-        )
+        try:
+            response = await self.client.responses.parse(
+                model=self.model,
+                instructions=system_prompt,
+                input=user_input,
+                text_format=GeneratedContentResponse,
+                temperature=0.7,
+            )
 
-        body = str(response.content) if hasattr(response, "content") else str(response)
+            result = response.output_parsed
+            if result:
+                return {
+                    "title": result.title.strip().strip('"'),
+                    "body": result.body,
+                }
 
-        # Generate a title
-        title_prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    "Generate a short, descriptive title (max 8 words) for the following content. "
-                    "Return ONLY the title, nothing else.",
-                ),
-                ("human", "{body}"),
-            ]
-        )
-        title_chain = title_prompt | self.llm
-        title_response = await title_chain.ainvoke({"body": body})
-        title = str(
-            title_response.content
-            if hasattr(title_response, "content")
-            else title_response
-        )
-
-        return {"title": title.strip().strip('"'), "body": body}
+            return {"title": content_type, "body": ""}
+        except Exception as e:
+            logger.error(f"Failed to generate content: {e}")
+            return {"title": content_type, "body": ""}
