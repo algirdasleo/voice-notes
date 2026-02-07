@@ -10,10 +10,8 @@ class Settings(BaseSettings):
 
     # API key for AI services
     OPENAI_API_KEY: SecretStr
+    STT_MODEL: str = "whisper-1"
     CHAT_MODEL: str = "gpt-5.1-mini"
-
-    # Hugging Face access token for transcribtion model
-    HF_ACCESS_TOKEN: SecretStr
 
     # Database credentials
     POSTGRES_USER: str | None = None
@@ -47,6 +45,7 @@ class Settings(BaseSettings):
 
         env_file = find_dotenv()
         env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
 def get_settings() -> Settings:

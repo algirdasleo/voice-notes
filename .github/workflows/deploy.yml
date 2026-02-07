@@ -66,4 +66,4 @@ jobs:
             --allow-unauthenticated \
             --port 8080 \
             --timeout 90 \
-            --set-env-vars ENV=prod,OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},HF_ACCESS_TOKEN=${{ secrets.HF_ACCESS_TOKEN }},POSTGRES_USER=${{ secrets.POSTGRES_USER }},POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }},POSTGRES_DB=${{ secrets.POSTGRES_DB }},POSTGRES_HOST=${{ secrets.POSTGRES_HOST }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},VITE_BACKEND_URL=${{ vars.BACKEND_URL }},VITE_FRONTEND_URL=${{ vars.FRONTEND_URL }} \
+            --set-env-vars ENV=prod,OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},POSTGRES_USER=${{ secrets.POSTGRES_USER }},POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }},POSTGRES_DB=${{ secrets.POSTGRES_DB }},POSTGRES_HOST=${{ secrets.POSTGRES_HOST }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},VITE_BACKEND_URL=${{ vars.BACKEND_URL }},VITE_FRONTEND_URL=${{ vars.FRONTEND_URL }} \

@@ -1,22 +1,27 @@
 """VoiceNotes Speech Services module."""
 
 import asyncio
+from io import BytesIO
 
-from huggingface_hub import InferenceClient
+from openai import OpenAI
 
 from voice_notes.config.settings import get_settings
 
 settings = get_settings()
 
-client = InferenceClient(
-    model="openai/whisper-large-v3", token=settings.HF_ACCESS_TOKEN.get_secret_value()
-)
+client = OpenAI(api_key=settings.OPENAI_API_KEY.get_secret_value())
 
 
 async def transcribe_audio(audio_data: bytes) -> str:
-    """Transcribe audio file using Hugging Face transcription models."""
+    """Transcribe audio file using OpenAI's Whisper API."""
     loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(
-        None, lambda: client.automatic_speech_recognition(audio_data)
-    )  # Wrap the blocking call in asyncio's run_in_executor to avoid blocking the event loop
-    return result.text
+
+    def _transcribe():
+        audio_file = BytesIO(audio_data)
+        transcript = client.audio.transcriptions.create(
+            model=settings.STT_MODEL,
+            file=("audio.wav", audio_file, "audio/wav"),
+        )
+        return transcript.text
+
+    return await loop.run_in_executor(None, _transcribe)
