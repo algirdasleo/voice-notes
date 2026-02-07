@@ -90,6 +90,9 @@ export const AppSidebar = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const isItemActive = (itemUrl: string) => {
+    if (itemUrl === "/") {
+      return location.pathname === "/"
+    }
     return location.pathname.startsWith(itemUrl)
   }
 
