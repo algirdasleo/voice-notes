@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Plus, X } from "lucide-react"
+import { X } from "lucide-react"
 import { AppLayout } from "./app-layout"
 import { VoiceNotesPage } from "@/pages/dashboard/voice-notes"
 import { type VoiceNote } from "@/types/voice-note"
@@ -51,15 +51,7 @@ export function VoiceNotesPageWrapper() {
   }, [allNotes])
 
   return (
-    <AppLayout
-      breadcrumbs={[{ label: "Voice Notes" }]}
-      headerAction={
-        <Button variant="ghost" size="sm" disabled={isLoading}>
-          <Plus className="size-4 mr-2" />
-          Create new
-        </Button>
-      }
-    >
+    <AppLayout breadcrumbs={[{ label: "Voice Notes" }]}>
       {/* Tag filter bar */}
       {allTags.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 mb-4 justify-center max-w-3xl mx-auto w-full">
