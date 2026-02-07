@@ -51,8 +51,8 @@ app = FastAPI(lifespan=lifespan)
 init(
     app_info=InputAppInfo(
         app_name="VoiceNotes",
-        api_domain=settings.BACKEND_URL,
-        website_domain=settings.FRONTEND_URL,
+        api_domain=settings.VITE_BACKEND_URL,
+        website_domain=settings.VITE_FRONTEND_URL,
         api_base_path="/auth",
     ),
     supertokens_config=SupertokensConfig(connection_uri="https://try.supertokens.io"),
@@ -85,7 +85,7 @@ app.add_middleware(get_middleware())
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.FRONTEND_URL],
+    allow_origins=[settings.VITE_FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

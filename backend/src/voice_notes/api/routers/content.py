@@ -35,6 +35,7 @@ async def get_all_content(
             title=content.title,
             content_type=content.content_type,
             body=content.body,
+            created_at=content.created_at,
             note=NoteInfo(
                 id=note_id,
                 title=note_title,

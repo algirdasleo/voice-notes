@@ -27,7 +27,13 @@ class ContentRepository:
     ) -> list[tuple[GeneratedContent, UUID, str, str]]:
         """Fetch all content with note info (id, title, transcription) for a specific user."""
         query = (
-            select(GeneratedContent, Note.id, Note.title, Note.transcription)
+            select(
+                GeneratedContent,
+                Note.id,
+                Note.title,
+                Note.transcription,
+                Note.created_at,
+            )
             .where(GeneratedContent.user_id == user_id)
             .join(Note, GeneratedContent.note_id == Note.id)
         )

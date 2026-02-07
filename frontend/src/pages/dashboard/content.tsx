@@ -58,16 +58,9 @@ export const ContentPage = ({ content, isLoading = false }: ContentPageProps) =>
                   />
                 </ItemMedia>
                 <ItemContent>
-                  <ItemTitle className="line-clamp-1">
-                    {item.title}
-                    {item.topic && (
-                      <span className="text-muted-foreground ml-2">• {item.topic}</span>
-                    )}
-                  </ItemTitle>
+                  <ItemTitle className="line-clamp-1">{item.title}</ItemTitle>
                   <div className="flex gap-2">
-                    {item.date && <ItemDescription>{item.date}</ItemDescription>}
-                    {item.duration && <ItemDescription>•</ItemDescription>}
-                    {item.duration && <ItemDescription>{item.duration}</ItemDescription>}
+                    {item.created_at && <ItemDescription>{item.created_at}</ItemDescription>}
                   </div>
                 </ItemContent>
               </a>

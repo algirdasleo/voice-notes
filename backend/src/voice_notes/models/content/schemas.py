@@ -50,4 +50,5 @@ class ContentWithNoteResponse(BaseModel):
     title: str
     content_type: str
     body: str
+    created_at: date
     note: NoteInfo

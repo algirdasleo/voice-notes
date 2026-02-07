@@ -3,6 +3,7 @@ export interface ContentItem {
   title: string
   content_type: string
   body: string
+  created_at: string
   note: {
     id: string
     title: string
