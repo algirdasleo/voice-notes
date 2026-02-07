@@ -26,7 +26,13 @@ async def chat_with_notes(websocket: WebSocket):
     chat_service = websocket.app.state.chat_service
     try:
         while True:
-            data = await websocket.receive_text()
+            try:
+                data = await websocket.receive_text()
+            except Exception as e:
+                await websocket.send_json(
+                    {"type": "error", "content": f"Failed to receive message: {str(e)}"}
+                )
+                break
 
             try:
                 message = AIChatRequest.model_validate_json(data)
@@ -41,19 +47,37 @@ async def chat_with_notes(websocket: WebSocket):
                 continue
 
             if message.type == "close":
-                await websocket.send_json(
-                    {"type": "close", "content": "Connection closing gracefully"}
-                )
+                try:
+                    await websocket.send_json(
+                        {"type": "close", "content": "Connection closing gracefully"}
+                    )
+                except Exception as e:
+                    print(f"Error sending close message: {str(e)}")
                 break
 
             if message.type == "message":
-                response = await chat_service.talk_with_notes(
-                    user_id=session.user_id, content=message.content
-                )
-                await websocket.send_json({"type": "response", "content": response})
+                try:
+                    response = await chat_service.talk_with_notes(
+                        user_id=session.user_id, content=message.content
+                    )
+                    await websocket.send_json({"type": "response", "content": response})
+                except Exception as e:
+                    await websocket.send_json(
+                        {
+                            "type": "error",
+                            "content": f"Failed to process message: {str(e)}",
+                        }
+                    )
 
     except Exception as e:
-        await websocket.send_json(
-            {"type": "error", "content": f"Server error: {str(e)}"}
-        )
-        await websocket.close()
+        try:
+            await websocket.send_json(
+                {"type": "error", "content": f"Server error: {str(e)}"}
+            )
+        except Exception as close_error:
+            print(f"Error sending error message: {str(close_error)}")
+        finally:
+            try:
+                await websocket.close()
+            except Exception as close_error:
+                print(f"Error closing websocket: {str(close_error)}")

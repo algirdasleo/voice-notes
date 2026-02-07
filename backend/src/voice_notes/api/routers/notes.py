@@ -28,9 +28,15 @@ async def create_note(
     user: SessionContainer = Depends(get_current_user),
 ):
     """Create a new voice note."""
-    notes_repository = NotesRepository(session)
-    db_note = Note(**note.model_dump(), user_id=user.user_id)
-    return await notes_repository.create(db_note)
+    try:
+        notes_repository = NotesRepository(session)
+        db_note = Note(**note.model_dump(), user_id=user.user_id)
+        return await notes_repository.create(db_note)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create note: {str(e)}",
+        )
 
 
 @router.post("/suggest-tags", response_model=SuggestTagsResponse)
@@ -39,8 +45,14 @@ async def suggest_tags(
     user: SessionContainer = Depends(get_current_user),
 ):
     """Suggest tags for a given transcription text."""
-    tags = await suggest_tags_from_text(request.text)
-    return SuggestTagsResponse(tags=tags)
+    try:
+        tags = await suggest_tags_from_text(request.text)
+        return SuggestTagsResponse(tags=tags)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to suggest tags: {str(e)}",
+        )
 
 
 @router.get("/")
@@ -49,8 +61,14 @@ async def get_notes(
     user: SessionContainer = Depends(get_current_user),
 ):
     """Get all voice notes."""
-    notes_repository = NotesRepository(session)
-    return await notes_repository.get_notes(user.user_id)
+    try:
+        notes_repository = NotesRepository(session)
+        return await notes_repository.get_notes(user.user_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get notes: {str(e)}",
+        )
 
 
 @router.put(f"/{{note_id}}")
@@ -61,14 +79,22 @@ async def update_note(
     user: SessionContainer = Depends(get_current_user),
 ):
     """Update a voice note by ID."""
-    notes_repository = NotesRepository(session)
-    db_note = await notes_repository.get_by_note_id(note_id)
-    if not db_note or db_note.user_id != user.user_id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Note not found"
-        )
+    try:
+        notes_repository = NotesRepository(session)
+        db_note = await notes_repository.get_by_note_id(note_id)
+        if not db_note or db_note.user_id != user.user_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Note not found"
+            )
 
-    return await notes_repository.update(note_id, note)
+        return await notes_repository.update(note_id, note)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update note: {str(e)}",
+        )
 
 
 @router.delete(f"/{{note_id}}", status_code=status.HTTP_204_NO_CONTENT)
@@ -78,11 +104,19 @@ async def delete_note(
     user: SessionContainer = Depends(get_current_user),
 ):
     """Delete a voice note by ID."""
-    notes_repository = NotesRepository(session)
-    db_note = await notes_repository.get_by_note_id(note_id)
-    if not db_note or db_note.user_id != user.user_id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Note not found"
-        )
+    try:
+        notes_repository = NotesRepository(session)
+        db_note = await notes_repository.get_by_note_id(note_id)
+        if not db_note or db_note.user_id != user.user_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Note not found"
+            )
 
-    await notes_repository.delete(note_id)
+        await notes_repository.delete(note_id)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete note: {str(e)}",
+        )
