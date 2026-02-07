@@ -17,6 +17,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { ThemeTogglerButton } from "./animate-ui/components/buttons/theme-toggler"
 import { AppSidebar } from "./app-sidebar"
+import { BackgroundBeams } from "@/components/ui/background-beams"
 
 interface BreadcrumbItemType {
   label: string
@@ -28,6 +29,7 @@ interface AppLayoutProps {
   isLoading?: boolean
   headerAction?: ReactNode
   breadcrumbs?: BreadcrumbItemType[]
+  showBeams?: boolean
 }
 
 export const AppLayout = ({
@@ -35,13 +37,15 @@ export const AppLayout = ({
   isLoading = false,
   headerAction,
   breadcrumbs = [],
+  showBeams = false,
 }: AppLayoutProps) => {
   return (
     <SidebarProvider>
       <AppSidebar />
 
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+      <SidebarInset className="relative overflow-hidden">
+        {showBeams && <BackgroundBeams className="opacity-40" />}
+        <header className="relative z-10 flex h-16 shrink-0 items-center gap-2 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <SidebarTrigger className="-ml-1" />
 
           <div className="flex flex-1 items-center justify-between">
@@ -68,7 +72,7 @@ export const AppLayout = ({
             </div>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 px-4 pt-5 pb-2 overflow-hidden min-h-0">
+        <div className="relative z-10 flex flex-1 flex-col gap-4 px-4 pt-5 pb-2 overflow-hidden min-h-0">
           {isLoading ? (
             <>
               <div className="grid auto-rows-min gap-4 md:grid-cols-3">

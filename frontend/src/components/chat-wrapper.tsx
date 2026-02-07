@@ -24,7 +24,7 @@ export function ChatPageWrapper() {
   }, [])
 
   return (
-    <AppLayout breadcrumbs={[{ label: "Chats" }]}>
+    <AppLayout breadcrumbs={[{ label: "Chats" }]} showBeams>
       <ChatPage chats={chats} isLoading={isLoading} />
     </AppLayout>
   )
