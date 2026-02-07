@@ -27,6 +27,20 @@ jobs:
   deploy-backend:
     name: Deploy Backend
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v3
 
@@ -52,4 +66,4 @@ jobs:
             --allow-unauthenticated \
             --port 8080 \
             --timeout 90 \
-            --set-env-vars ENV=prod,OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},HF_ACCESS_TOKEN=${{ secrets.HF_ACCESS_TOKEN }},POSTGRES_USER=${{ secrets.POSTGRES_USER }},POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }},POSTGRES_DB=${{ secrets.POSTGRES_DB }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},BACKEND_URL=${{ vars.BACKEND_URL }},FRONTEND_URL=${{ vars.FRONTEND_URL }} \
+            --set-env-vars ENV=prod,OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},HF_ACCESS_TOKEN=${{ secrets.HF_ACCESS_TOKEN }},POSTGRES_USER=${{ secrets.POSTGRES_USER }},POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }},POSTGRES_DB=${{ secrets.POSTGRES_DB }},POSTGRES_HOST=${{ secrets.POSTGRES_HOST }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},VITE_BACKEND_URL=${{ vars.BACKEND_URL }},VITE_FRONTEND_URL=${{ vars.FRONTEND_URL }} \

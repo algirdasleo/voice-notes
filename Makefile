@@ -1,4 +1,4 @@
-.PHONY: install dev backend frontend help
+.PHONY: install dev backend frontend help db-up db-down db-logs
 
 # Color output
 BLUE := \033[0;34m
@@ -6,36 +6,37 @@ GREEN := \033[0;32m
 NC := \033[0m # No Color
 
 help:
-	@echo "$(BLUE)VoiceNotes Development Commands$(NC)"
+	@echo "$(BLUE)VoiceNotes$(NC)"
 	@echo ""
-	@echo "$(GREEN)install$(NC)               Install all dependencies (backend and frontend)"
-	@echo "$(GREEN)backend$(NC)               Run backend server only (http://localhost:8000)"
-	@echo "$(GREEN)frontend$(NC)              Run frontend dev server only (http://localhost:5173)"
-	@echo "$(GREEN)dev$(NC)                   Run both backend and frontend"
+	@echo "$(GREEN)make install$(NC)      Install dependencies"
+	@echo "$(GREEN)make dev$(NC)           Run backend + frontend"
+	@echo "$(GREEN)make backend$(NC)       Run backend only"
+	@echo "$(GREEN)make frontend$(NC)      Run frontend only"
+	@echo ""
+	@echo "$(GREEN)make db-up$(NC)         Start PostgreSQL"
+	@echo "$(GREEN)make db-down$(NC)       Stop PostgreSQL"
+	@echo "$(GREEN)make db-logs$(NC)       View database logs"
 
 install:
-	@echo "$(BLUE)Installing backend dependencies...$(NC)"
 	cd backend && uv sync
-	@echo "$(BLUE)Installing frontend dependencies...$(NC)"
-	cd frontend && npm install
-	@echo "$(GREEN)✓ All dependencies installed$(NC)"
+	cd frontend && bun install
 
 backend:
-	@echo "$(BLUE)Starting backend server...$(NC)"
 	cd backend && uv run uvicorn voice_notes.main:app --reload
 
 frontend:
-	@echo "$(BLUE)Starting frontend dev server...$(NC)"
-	cd frontend && npm run dev
+	cd frontend && bun run dev
 
 dev:
-	@echo "$(BLUE)Starting both backend and frontend...$(NC)"
-	@echo "$(GREEN)Backend: http://localhost:8000$(NC)"
-	@echo "$(GREEN)Frontend: http://localhost:5173$(NC)"
-	@echo ""
-	@echo "$(BLUE)Press Ctrl+C to stop both servers$(NC)"
-	@echo ""
 	cd backend && uv run uvicorn voice_notes.main:app --reload & \
-	cd frontend && npm run dev & \
+	cd frontend && bun run dev & \
 	wait
 
+db-up:
+	docker compose up -d db
+
+db-down:
+	docker compose down
+
+db-logs:
+	docker compose logs -f db
