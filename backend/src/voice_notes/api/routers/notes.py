@@ -8,9 +8,15 @@ from supertokens_python.recipe.session import SessionContainer
 
 from voice_notes.api.dependencies import get_current_user
 from voice_notes.models.notes import Note
-from voice_notes.models.notes.schemas import NoteCreate, NoteUpdate
+from voice_notes.models.notes.schemas import (
+    NoteCreate,
+    NoteUpdate,
+    SuggestTagsRequest,
+    SuggestTagsResponse,
+)
 from voice_notes.repositories.notes import NotesRepository
 from voice_notes.services.database import get_session
+from voice_notes.services.tags import suggest_tags_from_text
 
 router = APIRouter()
 
@@ -25,6 +31,16 @@ async def create_note(
     notes_repository = NotesRepository(session)
     db_note = Note(**note.model_dump(), user_id=user.user_id)
     return await notes_repository.create(db_note)
+
+
+@router.post("/suggest-tags", response_model=SuggestTagsResponse)
+async def suggest_tags(
+    request: SuggestTagsRequest,
+    user: SessionContainer = Depends(get_current_user),
+):
+    """Suggest tags for a given transcription text."""
+    tags = await suggest_tags_from_text(request.text)
+    return SuggestTagsResponse(tags=tags)
 
 
 @router.get("/")
