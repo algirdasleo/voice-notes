@@ -9,8 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from supertokens_python.recipe.session import SessionContainer
 
 from voice_notes.api.dependencies import get_current_user
-from voice_notes.models.chat.schemas import AIChatRequest
-from voice_notes.services.auth import AuthService, WebSocketUser
+from voice_notes.models.chat.schemas import AIChatRequest, WebSocketUser
+from voice_notes.services.auth import AuthService
 from voice_notes.services.database import get_engine
 
 logger = logging.getLogger(__name__)
