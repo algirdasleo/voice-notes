@@ -26,6 +26,7 @@ from voice_notes.api.routers import auth, chat, content, health, notes, speech
 from voice_notes.config.settings import get_settings
 from voice_notes.services.chat import ChatService
 from voice_notes.services.database import create_tables
+from voice_notes.services.vector_store import VectorStoreService
 
 logger = logging.getLogger(__name__)
 
@@ -41,11 +42,14 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to create database tables: {e}")
 
     try:
-        app.state.chat_service = ChatService()
-        logger.info("Chat service initialized successfully")
+        vector_store_service = VectorStoreService()
+        app.state.vector_store_service = vector_store_service
+        app.state.chat_service = ChatService(vector_store=vector_store_service)
+        logger.info("Chat and vector store services initialized successfully")
     except Exception as e:
-        logger.error(f"Failed to initialize chat service: {e}")
+        logger.error(f"Failed to initialize services: {e}")
         app.state.chat_service = None
+        app.state.vector_store_service = None
 
     yield
 
