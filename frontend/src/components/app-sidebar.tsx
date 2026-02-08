@@ -35,7 +35,6 @@ import {
   Map,
   MoreHorizontal,
   MessageSquare,
-  Settings2,
   Sparkles,
   Mic,
 } from "lucide-react"
@@ -63,11 +62,6 @@ const DATA = {
       title: "Chat with your notes",
       url: "/chat",
       icon: MessageSquare,
-    },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings2,
     },
   ],
   projects: [
