@@ -1,45 +1,360 @@
-import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from "@/components/ui/item"
-import { Skeleton } from "@/components/ui/skeleton"
-import { type ChatItem, type ChatPageProps } from "@/types/chat"
+import { useCallback, useEffect, useRef, useState } from "react"
+import ReactMarkdown from "react-markdown"
+import rehypeHighlight from "rehype-highlight"
+import remarkGfm from "remark-gfm"
+import {
+  createChatWebSocket,
+  sendChatMessage,
+  setupChatWebSocketListeners,
+  closeChatWebSocket,
+} from "@/api/chat"
+import type { ChatBubble, ChatMessage } from "@/types/chat"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { cn } from "@/lib/utils"
+import {
+  Send,
+  Bot,
+  User,
+  MessageSquare,
+  Search,
+  ListChecks,
+  Lightbulb,
+  Sparkles,
+  WifiOff,
+  Loader2,
+} from "lucide-react"
 
-export const ChatPage = ({ chats = [], isLoading = false }: ChatPageProps) => {
-  if (isLoading) {
-    return (
-      <div className="flex justify-center">
-        <div className="w-full max-w-2xl space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 rounded-lg" />
-          ))}
-        </div>
-      </div>
+const SUGGESTIONS = [
+  {
+    icon: Search,
+    label: "Search my notes",
+    prompt: "Search my notes for key topics and summarize what you find.",
+  },
+  {
+    icon: ListChecks,
+    label: "List all notes",
+    prompt: "List all my voice notes with their dates and tags.",
+  },
+  {
+    icon: Lightbulb,
+    label: "Find action items",
+    prompt: "Search through my notes and find any action items or tasks I mentioned.",
+  },
+  {
+    icon: Sparkles,
+    label: "Summarize recent",
+    prompt: "Give me a summary of what my most recent notes are about.",
+  },
+]
+
+export const ChatPage = () => {
+  const [messages, setMessages] = useState<ChatBubble[]>([])
+  const [input, setInput] = useState("")
+  const [isConnected, setIsConnected] = useState(false)
+  const [isStreaming, setIsStreaming] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
+
+  const wsRef = useRef<WebSocket | null>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const streamingContentRef = useRef("")
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [])
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, scrollToBottom])
+
+  const resetConnectionState = useCallback(() => {
+    setIsConnected(false)
+    setIsConnecting(false)
+    setIsStreaming(false)
+  }, [])
+
+  const updateLastAssistantMessage = useCallback((updater: (msg: ChatBubble) => ChatBubble) => {
+    setMessages(prev => {
+      const last = prev[prev.length - 1]
+      if (last?.role === "assistant" && last.isStreaming) {
+        return [...prev.slice(0, -1), updater(last)]
+      }
+      return prev
+    })
+  }, [])
+
+  const connectWebSocket = useCallback(async () => {
+    if (
+      wsRef.current?.readyState === WebSocket.OPEN ||
+      wsRef.current?.readyState === WebSocket.CONNECTING
     )
+      return
+
+    setIsConnecting(true)
+    try {
+      const ws = await createChatWebSocket()
+      wsRef.current = ws
+
+      setupChatWebSocketListeners(ws, {
+        onOpen: () => {
+          setIsConnected(true)
+          setIsConnecting(false)
+        },
+        onToken: (token: string) => {
+          streamingContentRef.current += token
+          const captured = streamingContentRef.current
+          updateLastAssistantMessage(msg => ({ ...msg, content: captured }))
+        },
+        onStreamEnd: () => {
+          updateLastAssistantMessage(msg => ({ ...msg, isStreaming: false }))
+          streamingContentRef.current = ""
+          setIsStreaming(false)
+        },
+        onMessage: (msg: ChatMessage) => {
+          if (msg.type === "error") {
+            setMessages(prev => [
+              ...prev,
+              {
+                id: crypto.randomUUID(),
+                role: "assistant",
+                content: `⚠️ ${msg.content}`,
+                isStreaming: false,
+                timestamp: new Date(),
+              },
+            ])
+            setIsStreaming(false)
+          }
+        },
+        onClose: resetConnectionState,
+        onError: resetConnectionState,
+      })
+    } catch (error) {
+      console.error("Failed to create WebSocket:", error)
+      resetConnectionState()
+    }
+  }, [resetConnectionState, updateLastAssistantMessage])
+
+  useEffect(() => {
+    // Schedule connection outside the synchronous effect body
+    const id = requestAnimationFrame(() => void connectWebSocket())
+    return () => {
+      cancelAnimationFrame(id)
+      if (wsRef.current) {
+        closeChatWebSocket(wsRef.current)
+        wsRef.current = null
+      }
+    }
+  }, [connectWebSocket])
+
+  const handleSend = useCallback(
+    (text?: string) => {
+      const content = (text ?? input).trim()
+      if (!content || !wsRef.current || isStreaming) return
+
+      const userMessage: ChatBubble = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content,
+        timestamp: new Date(),
+      }
+
+      const assistantPlaceholder: ChatBubble = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: "",
+        isStreaming: true,
+        timestamp: new Date(),
+      }
+
+      streamingContentRef.current = ""
+      setMessages(prev => [...prev, userMessage, assistantPlaceholder])
+      setIsStreaming(true)
+      setInput("")
+
+      sendChatMessage(wsRef.current, content)
+
+      setTimeout(() => textareaRef.current?.focus(), 0)
+    },
+    [input, isStreaming]
+  )
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
   }
 
-  if (chats.length === 0) {
-    return (
-      <div className="flex justify-center">
-        <div className="w-full max-w-2xl space-y-4">
-          <p className="text-muted-foreground">No chats yet</p>
-        </div>
-      </div>
-    )
+  const handleReconnect = () => {
+    if (wsRef.current) {
+      wsRef.current.close()
+      wsRef.current = null
+    }
+    connectWebSocket()
   }
 
   return (
-    <div className="flex justify-center">
-      <div className="w-full max-w-2xl">
-        <ItemGroup className="gap-4">
-          {chats.map((chat: ChatItem) => (
-            <Item key={chat.id} variant="outline" asChild role="listitem">
-              <a href={`/chat/${chat.id}`}>
-                <ItemContent>
-                  <ItemTitle className="line-clamp-1">{chat.title}</ItemTitle>
-                  {chat.description && <ItemDescription>{chat.description}</ItemDescription>}
-                </ItemContent>
-              </a>
-            </Item>
-          ))}
-        </ItemGroup>
+    <div className="flex h-full flex-col overflow-hidden">
+      {/* Messages area */}
+      <div className="flex-1 overflow-y-auto px-2 sm:px-4">
+        {messages.length === 0 ? (
+          <EmptyState onSuggestionClick={prompt => handleSend(prompt)} isConnected={isConnected} />
+        ) : (
+          <div className="mx-auto w-full max-w-3xl space-y-6 py-6">
+            {messages.map(msg => (
+              <MessageBubble key={msg.id} message={msg} />
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
+      </div>
+
+      {/* Input area */}
+      <div className="border-t bg-background/80 backdrop-blur-sm px-2 sm:px-4 py-3">
+        <div className="mx-auto w-full max-w-3xl">
+          {!isConnected && !isConnecting && (
+            <div className="mb-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <WifiOff className="size-4 shrink-0" />
+              <span>Disconnected from chat.</span>
+              <Button
+                variant="link"
+                size="xs"
+                onClick={handleReconnect}
+                className="text-destructive ml-auto"
+              >
+                Reconnect
+              </Button>
+            </div>
+          )}
+          <div className="relative flex items-end gap-2">
+            <Textarea
+              ref={textareaRef}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={isConnected ? "Ask about your notes..." : "Connecting..."}
+              disabled={!isConnected || isStreaming}
+              className="min-h-11 max-h-40 resize-none pr-12 rounded-xl"
+              rows={1}
+            />
+            <Button
+              onClick={() => handleSend()}
+              disabled={!input.trim() || !isConnected || isStreaming}
+              size="icon"
+              className="absolute right-1.5 bottom-1.5 size-8 rounded-lg"
+            >
+              {isStreaming ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Send className="size-4" />
+              )}
+            </Button>
+          </div>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            AI can search your notes and the web. Responses may not always be accurate.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ─── Empty state ─── */
+
+function EmptyState({
+  onSuggestionClick,
+  isConnected,
+}: {
+  onSuggestionClick: (prompt: string) => void
+  isConnected: boolean
+}) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-8 py-12">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <div className="flex size-16 items-center justify-center rounded-2xl bg-primary/10">
+          <MessageSquare className="size-8 text-primary" />
+        </div>
+        <h2 className="text-2xl font-semibold tracking-tight">Chat with your notes</h2>
+        <p className="max-w-md text-muted-foreground">
+          Ask questions about your voice notes, find information, or get summaries. The AI can
+          search through all your notes and the web.
+        </p>
+      </div>
+
+      <div className="grid w-full max-w-xl grid-cols-1 gap-3 sm:grid-cols-2">
+        {SUGGESTIONS.map(s => (
+          <button
+            key={s.label}
+            onClick={() => isConnected && onSuggestionClick(s.prompt)}
+            disabled={!isConnected}
+            className={cn(
+              "group flex items-start gap-3 rounded-xl border bg-card p-4 text-left transition-all",
+              "hover:border-primary/30 hover:bg-accent/50 hover:shadow-sm",
+              "disabled:opacity-50 disabled:cursor-not-allowed"
+            )}
+          >
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20">
+              <s.icon className="size-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-sm">{s.label}</p>
+              <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{s.prompt}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ─── Message bubble ─── */
+
+function MessageBubble({ message }: { message: ChatBubble }) {
+  const isUser = message.role === "user"
+
+  return (
+    <div className={cn("flex gap-3", isUser && "flex-row-reverse")}>
+      <Avatar size="sm" className="mt-0.5 shrink-0">
+        <AvatarFallback
+          className={cn(
+            "rounded-lg text-xs",
+            isUser ? "bg-primary text-primary-foreground" : "bg-muted"
+          )}
+        >
+          {isUser ? <User className="size-3.5" /> : <Bot className="size-3.5" />}
+        </AvatarFallback>
+      </Avatar>
+
+      <div
+        className={cn(
+          "max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+          isUser ? "bg-primary text-primary-foreground rounded-br-md" : "bg-muted/60 rounded-bl-md"
+        )}
+      >
+        {isUser ? (
+          <p className="whitespace-pre-wrap">{message.content}</p>
+        ) : (
+          <div className="min-w-0">
+            {message.content ? (
+              <div className="chat-markdown max-w-none wrap-break-word">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+                  {message.content}
+                </ReactMarkdown>
+              </div>
+            ) : message.isStreaming ? (
+              <div className="flex items-center gap-1.5 py-1">
+                <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.3s]" />
+                <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.15s]" />
+                <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60" />
+              </div>
+            ) : null}
+            {message.isStreaming && message.content && (
+              <span className="inline-block w-1.5 h-4 ml-0.5 bg-foreground/70 animate-pulse rounded-sm align-text-bottom" />
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
