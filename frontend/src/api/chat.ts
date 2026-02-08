@@ -9,7 +9,7 @@ export async function createChatWebSocket(): Promise<WebSocket> {
   }
 
   // 2. Open the WebSocket with the ticket as a query param
-  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
+  const apiUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"
   const wsUrl = apiUrl.replace(/^http/, "ws")
   const url = new URL(`${wsUrl}/chat/ws`)
   url.searchParams.append("ticket", res.data.ticket)

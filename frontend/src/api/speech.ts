@@ -6,7 +6,7 @@ export async function transcribeAudio(audioFile: File): Promise<ApiResponse<Tran
   formData.append("file", audioFile)
 
   const response = await fetch(
-    `${import.meta.env.VITE_API_URL || "http://localhost:8000"}/speech/transcribe`,
+    `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/speech/transcribe`,
     {
       method: "POST",
       credentials: "include",
