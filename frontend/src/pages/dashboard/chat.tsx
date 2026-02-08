@@ -212,7 +212,7 @@ export const ChatPage = () => {
       </div>
 
       {/* Input area */}
-      <div className="border-t bg-background/80 backdrop-blur-sm px-2 sm:px-4 py-3">
+      <div className="px-2 sm:px-4 py-3">
         <div className="mx-auto w-full max-w-3xl">
           {!isConnected && !isConnecting && (
             <div className="mb-3 flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
