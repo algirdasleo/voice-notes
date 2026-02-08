@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     # Database credentials
     POSTGRES_USER: str | None = None
     POSTGRES_PASSWORD: SecretStr | None = None
-    POSTGRES_DB: str = "voice_notes"
+    POSTGRES_DB: str = "postgres"
     POSTGRES_HOST: str = "db"
     POSTGRES_PORT: int = 5432
 
@@ -38,9 +38,16 @@ class Settings(BaseSettings):
             raise ValueError(
                 "PostgreSQL credentials required. Set POSTGRES_USER and POSTGRES_PASSWORD."
             )
+        password = self.POSTGRES_PASSWORD.get_secret_value()
+        if self.POSTGRES_HOST.startswith("/"):
+            # Unix socket (Cloud SQL Auth Proxy)
+            return (
+                f"postgresql+asyncpg://{self.POSTGRES_USER}:{password}"
+                f"@/{self.POSTGRES_DB}?host={self.POSTGRES_HOST}"
+            )
         return (
             f"postgresql+asyncpg://{self.POSTGRES_USER}:"
-            f"{self.POSTGRES_PASSWORD.get_secret_value()}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/"
+            f"{password}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/"
             f"{self.POSTGRES_DB}"
         )
 
