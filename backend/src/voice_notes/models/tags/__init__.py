@@ -1,0 +1,1 @@
+"""Initialization of tags model."""
