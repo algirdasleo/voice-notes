@@ -3,7 +3,7 @@
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from supertokens_python.recipe.session import SessionContainer
 
@@ -18,13 +18,20 @@ from voice_notes.models.notes.schemas import (
 from voice_notes.repositories.notes import NotesRepository
 from voice_notes.services.database import get_session
 from voice_notes.services.tags import suggest_tags_from_text
+from voice_notes.services.vector_store import VectorStoreService
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+def _get_vector_store(request: Request) -> VectorStoreService | None:
+    """Extract the vector store service from app state."""
+    return getattr(request.app.state, "vector_store_service", None)
+
+
 @router.post("/")
 async def create_note(
+    request: Request,
     note: NoteCreate,
     session: AsyncSession = Depends(get_session),
     user: SessionContainer = Depends(get_current_user),
@@ -35,6 +42,19 @@ async def create_note(
         db_note = Note(**note.model_dump(), user_id=user.user_id)
         created_note = await notes_repository.create(db_note)
         logger.info(f"Note created successfully for user {user.user_id}")
+
+        # Embed the note for RAG search
+        vector_store = _get_vector_store(request)
+        if vector_store:
+            try:
+                await vector_store.embed_note(created_note, session)
+                logger.info(f"Note {created_note.id} embedded successfully")
+            except Exception as embed_err:
+                logger.error(
+                    f"Failed to embed note {created_note.id}: {str(embed_err)}",
+                    exc_info=True,
+                )
+
         return created_note
     except Exception as e:
         logger.error(
@@ -153,4 +173,55 @@ async def delete_note(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete note: {str(e)}",
+        )
+
+
+@router.post("/embed-all", status_code=status.HTTP_200_OK)
+async def embed_all_notes(
+    request: Request,
+    session: AsyncSession = Depends(get_session),
+    user: SessionContainer = Depends(get_current_user),
+):
+    """Embed all existing notes that don't yet have embeddings.
+
+    One-time backfill utility for notes created before RAG was enabled.
+    """
+    vector_store = _get_vector_store(request)
+    if not vector_store:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Vector store service not available",
+        )
+
+    try:
+        notes_repository = NotesRepository(session)
+        notes = await notes_repository.get_notes(user.user_id)
+
+        embedded_count = 0
+        skipped_count = 0
+        for note in notes:
+            has = await vector_store.has_embeddings(note.id, session)
+            if has:
+                skipped_count += 1
+                continue
+            await vector_store.embed_note(note, session)
+            embedded_count += 1
+
+        logger.info(
+            f"Backfill complete for user {user.user_id}: "
+            f"{embedded_count} embedded, {skipped_count} skipped"
+        )
+        return {
+            "embedded": embedded_count,
+            "skipped": skipped_count,
+            "total": len(notes),
+        }
+    except Exception as e:
+        logger.error(
+            f"Failed to backfill embeddings for user {user.user_id}: {str(e)}",
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to embed notes: {str(e)}",
         )
