@@ -10,8 +10,11 @@ class Settings(BaseSettings):
 
     # API key for AI services
     OPENAI_API_KEY: SecretStr
+    TAVILY_API_KEY: SecretStr
     STT_MODEL: str = "whisper-1"
     CHAT_MODEL: str = "gpt-5-mini"
+    EMBEDDING_MODEL: str = "text-embedding-3-large"
+    EMBEDDING_DIMENSIONS: int = 1536
 
     # Database credentials
     POSTGRES_USER: str | None = None
