@@ -21,8 +21,8 @@ jobs:
           bun run build
           bunx firebase-tools deploy --only hosting --project ${{ secrets.FIREBASE_PROJECT_ID }} --token ${{ secrets.FIREBASE_TOKEN }}
         env:
-          VITE_FRONTEND_URL: ${{ vars.FRONTEND_URL }}
-          VITE_BACKEND_URL: ${{ vars.BACKEND_URL }}
+          VITE_FRONTEND_URL: ${{ vars.VITE_FRONTEND_URL }}
+          VITE_BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
 
   deploy-backend:
     name: Deploy Backend
@@ -74,6 +74,6 @@ jobs:
               POSTGRES_HOST=${{ secrets.POSTGRES_HOST }},\
               GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},\
               GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},\
-              VITE_BACKEND_URL=${{ vars.BACKEND_URL }},\
-              VITE_FRONTEND_URL=${{ vars.FRONTEND_URL }},\
+              VITE_BACKEND_URL=${{ vars.VITE_BACKEND_URL }},\
+              VITE_FRONTEND_URL=${{ vars.VITE_FRONTEND_URL }},\
               TAVILY_API_KEY=${{ secrets.TAVILY_API_KEY }}"
