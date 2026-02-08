@@ -5,6 +5,12 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
+class WebSocketUser(BaseModel):
+    """Lightweight user object for WebSocket connections."""
+
+    user_id: str
+
+
 class AIChatRequest(BaseModel):
     """Schema for WebSocket chat messages."""
 
