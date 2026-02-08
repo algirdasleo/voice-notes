@@ -4,6 +4,7 @@ import logging
 
 from fastapi import FastAPI, Request
 from fastapi.concurrency import asynccontextmanager
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from supertokens_python import (
@@ -39,7 +40,7 @@ async def lifespan(app: FastAPI):
         await create_tables()
         logger.info("Database tables created successfully")
     except Exception as e:
-        logger.error(f"Failed to create database tables: {e}")
+        logger.error(f"Failed to create database tables: {e}", exc_info=True)
 
     try:
         vector_store_service = VectorStoreService()
@@ -47,7 +48,7 @@ async def lifespan(app: FastAPI):
         app.state.chat_service = ChatService(vector_store=vector_store_service)
         logger.info("Chat and vector store services initialized successfully")
     except Exception as e:
-        logger.error(f"Failed to initialize services: {e}")
+        logger.error(f"Failed to initialize services: {e}", exc_info=True)
         app.state.chat_service = None
         app.state.vector_store_service = None
 
@@ -100,6 +101,16 @@ app.add_middleware(
     allow_methods=["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["Content-Type"] + get_all_cors_headers(),
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Handle validation errors without exposing details."""
+    logger.warning(f"Validation error: {exc}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": "Invalid request"},
+    )
 
 
 @app.exception_handler(Exception)
