@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, WebSocket
 from langchain.messages import AIMessage, HumanMessage
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.websockets import WebSocketDisconnect
 from supertokens_python.recipe.session import SessionContainer
 
 from voice_notes.api.dependencies import get_current_user
@@ -50,17 +51,23 @@ async def chat_with_notes(websocket: WebSocket):
             while True:
                 try:
                     data = await websocket.receive_text()
+                except WebSocketDisconnect:
+                    logger.info(f"WebSocket disconnected for user {user.user_id}")
+                    break
                 except Exception as e:
                     logger.error(
                         f"Failed to receive message for user {user.user_id}: {str(e)}",
                         exc_info=True,
                     )
-                    await websocket.send_json(
-                        {
-                            "type": "error",
-                            "content": f"Failed to receive message: {str(e)}",
-                        }
-                    )
+                    try:
+                        await websocket.send_json(
+                            {
+                                "type": "error",
+                                "content": f"Failed to receive message: {str(e)}",
+                            }
+                        )
+                    except Exception:
+                        pass
                     break
 
                 try:
@@ -69,13 +76,16 @@ async def chat_with_notes(websocket: WebSocket):
                     logger.warning(
                         f"Invalid request schema for user {user.user_id}: {ex.errors()}"
                     )
-                    await websocket.send_json(
-                        {
-                            "type": "error",
-                            "content": "Invalid request schema",
-                            "errors": ex.errors(),
-                        }
-                    )
+                    try:
+                        await websocket.send_json(
+                            {
+                                "type": "error",
+                                "content": "Invalid request schema",
+                                "errors": ex.errors(),
+                            }
+                        )
+                    except Exception:
+                        pass
                     continue
 
                 if message.type == "close":
@@ -109,12 +119,18 @@ async def chat_with_notes(websocket: WebSocket):
                             session=db_session,
                         ):
                             full_response += token
-                            await websocket.send_json(
-                                {"type": "token", "content": token}
-                            )
+                            try:
+                                await websocket.send_json(
+                                    {"type": "token", "content": token}
+                                )
+                            except Exception:
+                                break
 
                         # Signal end of stream
-                        await websocket.send_json({"type": "end", "content": ""})
+                        try:
+                            await websocket.send_json({"type": "end", "content": ""})
+                        except Exception:
+                            pass
 
                         # Add assistant response to history
                         messages.append(AIMessage(content=full_response))
@@ -125,12 +141,15 @@ async def chat_with_notes(websocket: WebSocket):
                             f"Failed to process message for user {user.user_id}: {str(e)}",
                             exc_info=True,
                         )
-                        await websocket.send_json(
-                            {
-                                "type": "error",
-                                "content": f"Failed to process message: {str(e)}",
-                            }
-                        )
+                        try:
+                            await websocket.send_json(
+                                {
+                                    "type": "error",
+                                    "content": f"Failed to process message: {str(e)}",
+                                }
+                            )
+                        except Exception:
+                            pass
 
     except Exception as e:
         logger.error(
