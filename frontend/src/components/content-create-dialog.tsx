@@ -27,13 +27,13 @@ import { generateContent } from "@/api/content"
 import { getBadgeColor } from "@/lib/badge-utils"
 
 const CONTENT_TYPES = [
-  "Meeting Report",
-  "To-Do List",
-  "Translate",
-  "Blog Post",
-  "Email",
-  "Summary",
-  "Custom Prompt",
+  { label: "📋 Meeting Report", value: "Meeting Report" },
+  { label: "✅ To-Do List", value: "To-Do List" },
+  { label: "🌐 Translate", value: "Translate" },
+  { label: "✍️ Blog Post", value: "Blog Post" },
+  { label: "📧 Email", value: "Email" },
+  { label: "📝 Summary", value: "Summary" },
+  { label: "⚡ Custom Prompt", value: "Custom Prompt" },
 ]
 
 interface ContentCreateDialogProps {
@@ -145,9 +145,9 @@ export function ContentCreateDialog({
                 <SelectValue placeholder="Select content type..." />
               </SelectTrigger>
               <SelectContent>
-                {CONTENT_TYPES.map(type => (
-                  <SelectItem key={type} value={type}>
-                    {type}
+                {CONTENT_TYPES.map(({ label, value }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
                   </SelectItem>
                 ))}
               </SelectContent>

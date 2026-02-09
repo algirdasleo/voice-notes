@@ -18,6 +18,16 @@ const CONTENT_TYPE_COLORS: Record<string, string> = {
   "Custom Prompt": "red",
 }
 
+const CONTENT_TYPE_EMOJIS: Record<string, string> = {
+  "Meeting Report": "📋",
+  "To-Do List": "✅",
+  Translate: "🌐",
+  "Blog Post": "✍️",
+  Email: "📧",
+  Summary: "📝",
+  "Custom Prompt": "⚡",
+}
+
 function getContentTypeBadgeColor(type: string) {
   return (CONTENT_TYPE_COLORS[type] || "default") as
     | "blue"
@@ -98,7 +108,7 @@ export function ContentPageWrapper() {
                 }`}
                 onClick={() => setSelectedType(isActive ? null : type)}
               >
-                {type}
+                {CONTENT_TYPE_EMOJIS[type] ?? "📄"} {type}
                 {isActive && <X className="size-3 ml-0.5" />}
               </Badge>
             )
