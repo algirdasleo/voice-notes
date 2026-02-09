@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useEffect, useRef, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import Session from "supertokens-web-js/recipe/session"
+import { signInAndUp } from "supertokens-web-js/recipe/thirdparty"
 
 interface ErrorDetails {
   title: string
@@ -11,76 +11,53 @@ interface ErrorDetails {
 
 export const CallbackPage = () => {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
   const [error, setError] = useState<ErrorDetails | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [redirectTimer, setRedirectTimer] = useState(3)
+  const hasRun = useRef(false)
 
   useEffect(() => {
+    // Prevent double-run in StrictMode
+    if (hasRun.current) return
+    hasRun.current = true
+
     const handleCallback = async () => {
       try {
-        const code = searchParams.get("code")
-        const error_param = searchParams.get("error")
-        const error_description = searchParams.get("error_description")
+        const response = await signInAndUp()
+        const status = response.status as string
 
-        // Check for explicit OAuth errors
-        if (error_param) {
-          const errorMessages: Record<string, string> = {
-            access_denied:
-              "You cancelled the authentication process. Please try again if you'd like to sign in.",
-            invalid_scope: "Invalid permissions requested. Please contact support.",
-            server_error:
-              "Google authentication service is temporarily unavailable. Please try again.",
-            temporarily_unavailable:
-              "Google authentication service is temporarily unavailable. Please try again.",
-          }
-
-          throw {
-            title: "Authentication Cancelled",
-            message: errorMessages[error_param] || error_description || "Authentication failed",
-            details: `Error code: ${error_param}`,
-          }
+        if (status === "OK") {
+          navigate("/", { replace: true })
+          return
         }
 
-        if (!code) {
+        if (status === "NO_EMAIL_GIVEN_BY_PROVIDER") {
           throw {
-            title: "Missing Authorization Code",
+            title: "Email Not Available",
             message:
-              "The authorization code was not received from Google. This may indicate a network issue or misconfiguration.",
-            details: "Please check your internet connection and try again.",
+              "Google did not provide an email address. Please ensure your Google account has a verified email.",
+            details: "Try again or use email/password sign in.",
           }
         }
 
-        // The SuperTokens SDK should have already processed the token exchange
-        // We just need to verify the session was created
-        let attempts = 0
-        const maxAttempts = 10
-        const checkInterval = 500
-
-        // Retry checking for session as it might take a moment to be established
-        while (attempts < maxAttempts) {
-          const hasSession = await Session.doesSessionExist()
-          if (hasSession) {
-            navigate("/", { replace: true })
-            return
-          }
-          attempts++
-          if (attempts < maxAttempts) {
-            await new Promise(resolve => setTimeout(resolve, checkInterval))
+        if (status === "SIGN_IN_UP_NOT_ALLOWED") {
+          throw {
+            title: "Sign In Not Allowed",
+            message:
+              "Signing in with this account is not allowed. This may be due to account linking restrictions.",
+            details: "Please try a different sign-in method or contact support.",
           }
         }
 
-        // If we reach here, no session was created
         throw {
-          title: "Session Creation Failed",
-          message:
-            "Authentication was successful, but your session could not be established. This may be a temporary issue.",
-          details: `Attempts: ${attempts}/${maxAttempts}. Please try signing in again.`,
+          title: "Authentication Failed",
+          message: "An unexpected response was received. Please try again.",
+          details: `Status: ${status}`,
         }
       } catch (err: unknown) {
         setIsLoading(false)
 
-        // Handle both string errors and error objects
+        // Handle our custom error objects
         if (typeof err === "object" && err !== null && "title" in err) {
           setError(err as ErrorDetails)
         } else if (err instanceof Error) {
@@ -100,7 +77,7 @@ export const CallbackPage = () => {
     }
 
     handleCallback()
-  }, [navigate, searchParams])
+  }, [navigate])
 
   useEffect(() => {
     if (!error) return
