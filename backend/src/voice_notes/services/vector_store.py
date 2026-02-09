@@ -48,18 +48,22 @@ class VectorStoreService:
 
     async def embed_note(self, note: Note, session: AsyncSession) -> None:
         """Generate embeddings for a note's transcription and store them."""
-        chunks = self.chunk_text(note.transcription)
+        note_id = note.id
+        user_id = note.user_id
+        transcription = note.transcription
+
+        chunks = self.chunk_text(transcription)
         if not chunks:
-            logger.warning(f"No chunks generated for note {note.id}")
+            logger.warning(f"No chunks generated for note {note_id}")
             return
 
-        logger.info(f"Embedding note {note.id} ({len(chunks)} chunks)")
+        logger.info(f"Embedding note {note_id} ({len(chunks)} chunks)")
 
         for i, chunk in enumerate(chunks):
             embedding = await self.get_embedding(chunk)
             note_embedding = NoteEmbedding(
-                note_id=note.id,
-                user_id=note.user_id,
+                note_id=note_id,
+                user_id=user_id,
                 chunk_text=chunk,
                 chunk_index=i,
                 embedding=embedding,
@@ -67,7 +71,7 @@ class VectorStoreService:
             session.add(note_embedding)
 
         await session.commit()
-        logger.info(f"Successfully embedded note {note.id}")
+        logger.info(f"Successfully embedded note {note_id}")
 
     async def delete_note_embeddings(
         self, note_id: UUID, session: AsyncSession
