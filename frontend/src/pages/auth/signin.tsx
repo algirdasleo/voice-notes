@@ -28,6 +28,7 @@ export const SigninPage = () => {
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [name, setName] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [isSignUp, setIsSignUp] = useState(false)
@@ -49,13 +50,17 @@ export const SigninPage = () => {
       errors.password = "Password is required"
     }
 
+    if (isSignUp && !name.trim()) {
+      errors.name = "Name is required"
+    }
+
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors)
       return false
     }
 
     return true
-  }, [email, password])
+  }, [email, password, name, isSignUp])
 
   // Check if email already exists
   const checkEmailExists = useCallback(async (emailValue: string): Promise<boolean> => {
@@ -157,7 +162,21 @@ export const SigninPage = () => {
       } else if (response.status === "SIGN_UP_NOT_ALLOWED") {
         setError(`Sign up not allowed: ${response.reason}`)
       } else {
-        // Sign up successful
+        // Sign up successful, now update metadata with name
+        try {
+          const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001"
+          await fetch(`${apiUrl}/api/auth/metadata`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ name: name.trim() }),
+          })
+        } catch (err) {
+          console.error("Failed to update user name:", err)
+          // Continue with navigation anyway
+        }
         navigate(redirectTo, { replace: true })
       }
     } catch (err: unknown) {
@@ -170,7 +189,7 @@ export const SigninPage = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [email, password, clearErrors, validateForm, checkEmailExists, navigate, redirectTo])
+  }, [email, password, name, clearErrors, validateForm, checkEmailExists, navigate, redirectTo])
 
   // Google login
   const handleGoogleLogin = useCallback(async () => {
@@ -231,6 +250,7 @@ export const SigninPage = () => {
     clearErrors()
     setEmail("")
     setPassword("")
+    setName("")
   }, [clearErrors])
 
   return (
@@ -275,6 +295,31 @@ export const SigninPage = () => {
                 </p>
               )}
             </div>
+
+            {isSignUp && (
+              <div className="space-y-2">
+                <Label htmlFor="name">First Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John"
+                  value={name}
+                  onChange={e => {
+                    setName(e.target.value)
+                    setFieldErrors(prev => ({ ...prev, name: "" }))
+                  }}
+                  disabled={isLoading}
+                  className={fieldErrors.name ? "border-destructive" : ""}
+                  autoComplete="name"
+                  required
+                />
+                {fieldErrors.name && (
+                  <p className="text-sm text-destructive" role="alert">
+                    {fieldErrors.name}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
