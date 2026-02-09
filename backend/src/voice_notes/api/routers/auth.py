@@ -3,6 +3,7 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from supertokens_python.asyncio import get_user
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.usermetadata.asyncio import (
     get_user_metadata,
@@ -19,12 +20,20 @@ router = APIRouter()
 async def me(user=Depends(verify_session())):
     """Get the current authenticated user's information."""
     try:
-        metadata = await get_user_metadata(user.user_id)
+        user_info = await get_user(user.user_id)
+
+        email = None
+        if user_info is not None:
+            for login_method in user_info.login_methods:
+                if login_method.email is not None:
+                    email = login_method.email
+                    break
+
         logger.info(f"User metadata retrieved for user {user.user_id}")
         return {
             "user_id": user.user_id,
-            "email": user.user_id,
-            "metadata": metadata.metadata if metadata.metadata else {},
+            "email": email or "unknown@example.com",
+            "name": "User",  # Default since
         }
     except Exception as e:
         logger.error(

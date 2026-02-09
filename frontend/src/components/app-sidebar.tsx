@@ -39,7 +39,9 @@ import {
   Mic,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { apiFetch } from "@/api/client"
 
 const DATA = {
   navMain: [
@@ -81,27 +83,22 @@ export const AppSidebar = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      try {
-        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001"
-        const response = await fetch(`${apiUrl}/api/auth/me`, {
-          credentials: "include",
-        })
+      const { data, error } = await apiFetch<{ user_id: string; email: string; name: string }>(
+        "/auth/me"
+      )
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch user data")
-        }
-
-        const data = await response.json()
-        const userName = data.metadata?.name || "User"
-
-        setUser({
-          name: userName,
-          email: data.email || "unknown@example.com",
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=3b82f6&color=fff&bold=true`,
-        })
-      } catch (error) {
+      if (error || !data) {
         console.error("Failed to fetch user data:", error)
+        return
       }
+
+      const userName = data.name || "User"
+
+      setUser({
+        name: userName,
+        email: data.email || "unknown@example.com",
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=3b82f6&color=fff&bold=true`,
+      })
     }
 
     fetchUserData()
@@ -227,13 +224,26 @@ export const AppSidebar = () => {
                   size="lg"
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
-                  <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user?.avatar} alt={user?.name || "User"} />
-                    <AvatarFallback className="rounded-lg">{user?.name?.[0] || "U"}</AvatarFallback>
-                  </Avatar>
+                  {user ? (
+                    <Avatar className="h-8 w-8 rounded-lg">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback className="rounded-lg">{user.name[0]}</AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                  )}
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{user?.name || "Loading..."}</span>
-                    <span className="truncate text-xs">{user?.email || ""}</span>
+                    {user ? (
+                      <>
+                        <span className="truncate font-semibold">{user.name}</span>
+                        <span className="truncate text-xs">{user.email}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-3 w-32 mt-1" />
+                      </>
+                    )}
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
                 </SidebarMenuButton>
@@ -246,15 +256,26 @@ export const AppSidebar = () => {
               >
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={user?.avatar} alt={user?.name || "User"} />
-                      <AvatarFallback className="rounded-lg">
-                        {user?.name?.[0] || "U"}
-                      </AvatarFallback>
-                    </Avatar>
+                    {user ? (
+                      <Avatar className="h-8 w-8 rounded-lg">
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback className="rounded-lg">{user.name[0]}</AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <Skeleton className="h-8 w-8 rounded-lg" />
+                    )}
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">{user?.name || "Loading..."}</span>
-                      <span className="truncate text-xs">{user?.email || ""}</span>
+                      {user ? (
+                        <>
+                          <span className="truncate font-semibold">{user.name}</span>
+                          <span className="truncate text-xs">{user.email}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-3 w-32 mt-1" />
+                        </>
+                      )}
                     </div>
                   </div>
                 </DropdownMenuLabel>
