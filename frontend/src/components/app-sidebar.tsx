@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useLocation, Link } from "react-router-dom"
 import Session from "supertokens-web-js/recipe/session"
 import {
@@ -42,11 +42,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 const DATA = {
-  user: {
-    name: "Skyleen",
-    email: "skyleen@example.com",
-    avatar: "https://pbs.twimg.com/profile_images/1909615404789506048/MTqvRsjo_400x400.jpg",
-  },
   navMain: [
     {
       title: "Voice Notes",
@@ -82,6 +77,35 @@ export const AppSidebar = () => {
   const isMobile = useIsMobile()
   const location = useLocation()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [user, setUser] = useState<{ name: string; email: string; avatar: string } | null>(null)
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001"
+        const response = await fetch(`${apiUrl}/api/auth/me`, {
+          credentials: "include",
+        })
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data")
+        }
+
+        const data = await response.json()
+        const userName = data.metadata?.name || "User"
+
+        setUser({
+          name: userName,
+          email: data.email || "unknown@example.com",
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=3b82f6&color=fff&bold=true`,
+        })
+      } catch (error) {
+        console.error("Failed to fetch user data:", error)
+      }
+    }
+
+    fetchUserData()
+  }, [])
 
   const isItemActive = (itemUrl: string) => {
     if (itemUrl === "/") {
@@ -204,12 +228,12 @@ export const AppSidebar = () => {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={DATA.user.avatar} alt={DATA.user.name} />
-                    <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                    <AvatarImage src={user?.avatar} alt={user?.name || "User"} />
+                    <AvatarFallback className="rounded-lg">{user?.name?.[0] || "U"}</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{DATA.user.name}</span>
-                    <span className="truncate text-xs">{DATA.user.email}</span>
+                    <span className="truncate font-semibold">{user?.name || "Loading..."}</span>
+                    <span className="truncate text-xs">{user?.email || ""}</span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
                 </SidebarMenuButton>
@@ -223,12 +247,14 @@ export const AppSidebar = () => {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={DATA.user.avatar} alt={DATA.user.name} />
-                      <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                      <AvatarImage src={user?.avatar} alt={user?.name || "User"} />
+                      <AvatarFallback className="rounded-lg">
+                        {user?.name?.[0] || "U"}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">{DATA.user.name}</span>
-                      <span className="truncate text-xs">{DATA.user.email}</span>
+                      <span className="truncate font-semibold">{user?.name || "Loading..."}</span>
+                      <span className="truncate text-xs">{user?.email || ""}</span>
                     </div>
                   </div>
                 </DropdownMenuLabel>
