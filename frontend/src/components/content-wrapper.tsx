@@ -71,7 +71,6 @@ export function ContentPageWrapper() {
   return (
     <AppLayout
       breadcrumbs={[{ label: "Content" }]}
-      showBeams
       headerAction={
         <Button
           variant="ghost"

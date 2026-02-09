@@ -17,7 +17,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { ThemeTogglerButton } from "./animate-ui/components/buttons/theme-toggler"
 import { AppSidebar } from "./app-sidebar"
-import { BackgroundBeams } from "@/components/ui/background-beams"
 
 interface BreadcrumbItemType {
   label: string
@@ -29,7 +28,6 @@ interface AppLayoutProps {
   isLoading?: boolean
   headerAction?: ReactNode
   breadcrumbs?: BreadcrumbItemType[]
-  showBeams?: boolean
 }
 
 export const AppLayout = ({
@@ -37,14 +35,12 @@ export const AppLayout = ({
   isLoading = false,
   headerAction,
   breadcrumbs = [],
-  showBeams = false,
 }: AppLayoutProps) => {
   return (
     <SidebarProvider>
       <AppSidebar />
 
       <SidebarInset className="relative overflow-hidden">
-        {showBeams && <BackgroundBeams className="opacity-40" />}
         <header className="relative z-10 flex h-16 shrink-0 items-center gap-2 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <SidebarTrigger className="-ml-1" />
 

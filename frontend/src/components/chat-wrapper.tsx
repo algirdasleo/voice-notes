@@ -3,7 +3,7 @@ import { ChatPage } from "@/pages/dashboard/chat"
 
 export function ChatPageWrapper() {
   return (
-    <AppLayout breadcrumbs={[{ label: "Chat with your notes" }]} showBeams={true}>
+    <AppLayout breadcrumbs={[{ label: "Chat with your notes" }]}>
       <ChatPage />
     </AppLayout>
   )

@@ -51,7 +51,7 @@ export function VoiceNotesPageWrapper() {
   }, [allNotes])
 
   return (
-    <AppLayout breadcrumbs={[{ label: "Voice Notes" }]} showBeams>
+    <AppLayout breadcrumbs={[{ label: "Voice Notes" }]}>
       {/* Tag filter bar */}
       {allTags.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 mb-4 justify-center max-w-3xl mx-auto w-full">
