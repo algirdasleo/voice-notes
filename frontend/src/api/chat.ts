@@ -17,11 +17,12 @@ export async function createChatWebSocket(): Promise<WebSocket> {
   return new WebSocket(url.toString())
 }
 
-export function sendChatMessage(ws: WebSocket, message: string): void {
+export function sendChatMessage(ws: WebSocket, message: string, projectIds?: string[]): void {
   if (ws.readyState === WebSocket.OPEN) {
     const payload: ChatRequest = {
       type: "message",
       content: message,
+      ...(projectIds && { project_ids: projectIds }),
     }
     ws.send(JSON.stringify(payload))
   }
@@ -51,13 +52,11 @@ export function setupChatWebSocketListeners(ws: WebSocket, handlers: ChatWebSock
     try {
       const data = JSON.parse(event.data) as ChatMessage
 
-      // Handle streaming tokens
       if (data.type === "token" && handlers.onToken) {
         handlers.onToken(data.content)
         return
       }
 
-      // Handle stream end
       if (data.type === "end" && handlers.onStreamEnd) {
         handlers.onStreamEnd()
         return

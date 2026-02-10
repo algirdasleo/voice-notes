@@ -112,10 +112,10 @@ export function ProjectNotesDialog({
       const toRemove = [...originalAssignedIds].filter(id => !assignedNoteIds.has(id))
 
       if (toAdd.length > 0) {
-        await addNotesToProject(project.id, { note_ids: toAdd })
+        await addNotesToProject(project.id, toAdd)
       }
       if (toRemove.length > 0) {
-        await removeNotesFromProject(project.id, { note_ids: toRemove })
+        await removeNotesFromProject(project.id, toRemove)
       }
 
       onOpenChange(false)
