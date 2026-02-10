@@ -249,7 +249,8 @@ class TestProjectNotes:
             headers=auth_headers,
         )
 
-        response = await async_client.delete(
+        response = await async_client.request(
+            "DELETE",
             f"/projects/{project.id}/notes",
             json={"note_ids": [str(note.id)]},
             headers=auth_headers,

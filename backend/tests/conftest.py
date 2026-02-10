@@ -8,6 +8,7 @@ import asyncpg
 import httpx
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from voice_notes.api.dependencies import get_current_user
@@ -45,6 +46,11 @@ async def cleanup_test_db():
     """Create test database before tests, clean up after all tests are done."""
     conn = await asyncpg.connect(**ASYNCPG_CONNECTION_PARAMS)
     try:
+        # Terminate any leftover connections from previous runs
+        await conn.execute(
+            "SELECT pg_terminate_backend(pid) FROM pg_stat_activity "
+            "WHERE datname = 'voice_notes_test' AND pid <> pg_backend_pid()"
+        )
         await conn.execute("DROP DATABASE IF EXISTS voice_notes_test")
         await conn.execute("CREATE DATABASE voice_notes_test")
     finally:
@@ -54,7 +60,11 @@ async def cleanup_test_db():
 
     conn = await asyncpg.connect(**ASYNCPG_CONNECTION_PARAMS)
     try:
-        # Terminate all connections to voice_notes_test database
+        # Terminate all connections before dropping
+        await conn.execute(
+            "SELECT pg_terminate_backend(pid) FROM pg_stat_activity "
+            "WHERE datname = 'voice_notes_test' AND pid <> pg_backend_pid()"
+        )
         await conn.execute("DROP DATABASE IF EXISTS voice_notes_test")
     finally:
         await conn.close()
@@ -66,9 +76,11 @@ async def db():
     engine = create_async_engine(
         TEST_DATABASE_URL,
         echo=False,
+        pool_pre_ping=True,
     )
 
     async with engine.begin() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.run_sync(Base.metadata.create_all)
 
     async_session = AsyncSession(engine, expire_on_commit=False)
