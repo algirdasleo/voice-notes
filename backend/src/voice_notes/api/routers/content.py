@@ -21,6 +21,7 @@ from voice_notes.repositories.content import ContentRepository
 from voice_notes.repositories.notes import NotesRepository
 from voice_notes.services.content import ContentGenerationService
 from voice_notes.services.database import get_session
+from voice_notes.utils import raise_server_error, verify_ownership
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -33,11 +34,7 @@ async def get_content_types() -> list[str]:
         logger.info("Content types retrieved")
         return CONTENT_TYPES
     except Exception as e:
-        logger.error(f"Failed to get content types: {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get content types: {str(e)}",
-        )
+        raise_server_error(logger, "Failed to get content types", e)
 
 
 @router.get("/")
@@ -70,13 +67,7 @@ async def get_all_content(
             for content, note_id, note_title, note_transcription in content_list
         ]
     except Exception as e:
-        logger.error(
-            f"Failed to get content for user {user.user_id}: {str(e)}", exc_info=True
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get content: {str(e)}",
-        )
+        raise_server_error(logger, "Failed to get content", e)
 
 
 @router.post("/generate", status_code=status.HTTP_201_CREATED)
@@ -111,14 +102,7 @@ async def generate_content(
 
         for note_id in request.note_ids:
             note = await notes_repo.get_by_note_id(note_id)
-            if not note or note.user_id != user.user_id:
-                logger.warning(
-                    f"Unauthorized note access attempt for note {note_id} by user {user.user_id}"
-                )
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Note {note_id} not found.",
-                )
+            note = verify_ownership(note, user.user_id, f"Note {note_id}")
             transcriptions.append({"title": note.title, "text": note.transcription})
 
         service = ContentGenerationService()
@@ -138,14 +122,7 @@ async def generate_content(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(
-            f"Failed to generate content for user {user.user_id}: {str(e)}",
-            exc_info=True,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate content: {str(e)}",
-        )
+        raise_server_error(logger, "Failed to generate content", e)
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -162,13 +139,7 @@ async def create_content(
         logger.info(f"Content created successfully for user {user.user_id}")
         return created
     except Exception as e:
-        logger.error(
-            f"Failed to create content for user {user.user_id}: {str(e)}", exc_info=True
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create content: {str(e)}",
-        )
+        raise_server_error(logger, "Failed to create content", e)
 
 
 @router.get(f"/{{note_id}}")
@@ -182,9 +153,6 @@ async def get_contents(
         content_repository = ContentRepository(session)
         content = await content_repository.get_by_note_id(note_id)
         if not content or content[0].user_id != user.user_id:
-            logger.warning(
-                f"Unauthorized content access for note {note_id} by user {user.user_id}"
-            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Content not found"
             )
@@ -194,14 +162,7 @@ async def get_contents(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(
-            f"Failed to get content for note {note_id} for user {user.user_id}: {str(e)}",
-            exc_info=True,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get content: {str(e)}",
-        )
+        raise_server_error(logger, "Failed to get content", e)
 
 
 @router.put(f"/{{content_id}}")
@@ -215,13 +176,7 @@ async def update_content(
     try:
         content_repository = ContentRepository(session)
         db_content = await content_repository.get_by_id(content_id)
-        if not db_content or db_content.user_id != user.user_id:
-            logger.warning(
-                f"Unauthorized update attempt for content {content_id} by user {user.user_id}"
-            )
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Content not found"
-            )
+        verify_ownership(db_content, user.user_id, "Content")
 
         updated = await content_repository.update(content_id, content)
         logger.info(
@@ -231,14 +186,7 @@ async def update_content(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(
-            f"Failed to update content {content_id} for user {user.user_id}: {str(e)}",
-            exc_info=True,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update content: {str(e)}",
-        )
+        raise_server_error(logger, "Failed to update content", e)
 
 
 @router.delete(f"/{{content_id}}", status_code=status.HTTP_204_NO_CONTENT)
@@ -251,13 +199,7 @@ async def delete_content(
     try:
         content_repository = ContentRepository(session)
         content = await content_repository.get_by_id(content_id)
-        if not content or content.user_id != user.user_id:
-            logger.warning(
-                f"Unauthorized delete attempt for content {content_id} by user {user.user_id}"
-            )
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Content not found"
-            )
+        verify_ownership(content, user.user_id, "Content")
 
         await content_repository.delete(content_id)
         logger.info(
@@ -266,11 +208,4 @@ async def delete_content(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(
-            f"Failed to delete content {content_id} for user {user.user_id}: {str(e)}",
-            exc_info=True,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete content: {str(e)}",
-        )
+        raise_server_error(logger, "Failed to delete content", e)

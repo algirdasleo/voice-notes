@@ -19,6 +19,7 @@ from voice_notes.repositories.notes import NotesRepository
 from voice_notes.services.database import get_session
 from voice_notes.services.tags import suggest_tags_from_text
 from voice_notes.services.vector_store import VectorStoreService
+from voice_notes.utils import raise_server_error, verify_ownership
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -57,13 +58,7 @@ async def create_note(
 
         return created_note
     except Exception as e:
-        logger.error(
-            f"Failed to create note for user {user.user_id}: {str(e)}", exc_info=True
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create note: {str(e)}",
-        )
+        raise_server_error(logger, "Failed to create note", e)
 
 
 @router.post("/suggest-tags", response_model=SuggestTagsResponse)
@@ -77,13 +72,7 @@ async def suggest_tags(
         logger.info(f"Tags suggested successfully for user {user.user_id}")
         return SuggestTagsResponse(tags=tags)
     except Exception as e:
-        logger.error(
-            f"Failed to suggest tags for user {user.user_id}: {str(e)}", exc_info=True
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to suggest tags: {str(e)}",
-        )
+        raise_server_error(logger, "Failed to suggest tags", e)
 
 
 @router.get("/")
@@ -99,13 +88,7 @@ async def get_notes(
         logger.info(f"Notes retrieved successfully for user {user.user_id}")
         return notes
     except Exception as e:
-        logger.error(
-            f"Failed to get notes for user {user.user_id}: {str(e)}", exc_info=True
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get notes: {str(e)}",
-        )
+        raise_server_error(logger, "Failed to get notes", e)
 
 
 @router.put(f"/{{note_id}}")
@@ -119,13 +102,7 @@ async def update_note(
     try:
         notes_repository = NotesRepository(session)
         db_note = await notes_repository.get_by_note_id(note_id)
-        if not db_note or db_note.user_id != user.user_id:
-            logger.warning(
-                f"Unauthorized update attempt for note {note_id} by user {user.user_id}"
-            )
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Note not found"
-            )
+        verify_ownership(db_note, user.user_id, "Note")
 
         updated_note = await notes_repository.update(note_id, note)
         logger.info(f"Note {note_id} updated successfully for user {user.user_id}")
@@ -133,14 +110,7 @@ async def update_note(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(
-            f"Failed to update note {note_id} for user {user.user_id}: {str(e)}",
-            exc_info=True,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update note: {str(e)}",
-        )
+        raise_server_error(logger, "Failed to update note", e)
 
 
 @router.delete(f"/{{note_id}}", status_code=status.HTTP_204_NO_CONTENT)
@@ -153,27 +123,14 @@ async def delete_note(
     try:
         notes_repository = NotesRepository(session)
         db_note = await notes_repository.get_by_note_id(note_id)
-        if not db_note or db_note.user_id != user.user_id:
-            logger.warning(
-                f"Unauthorized delete attempt for note {note_id} by user {user.user_id}"
-            )
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Note not found"
-            )
+        verify_ownership(db_note, user.user_id, "Note")
 
         await notes_repository.delete(note_id)
         logger.info(f"Note {note_id} deleted successfully for user {user.user_id}")
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(
-            f"Failed to delete note {note_id} for user {user.user_id}: {str(e)}",
-            exc_info=True,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete note: {str(e)}",
-        )
+        raise_server_error(logger, "Failed to delete note", e)
 
 
 @router.post("/embed-all", status_code=status.HTTP_200_OK)
@@ -217,11 +174,4 @@ async def embed_all_notes(
             "total": len(notes),
         }
     except Exception as e:
-        logger.error(
-            f"Failed to backfill embeddings for user {user.user_id}: {str(e)}",
-            exc_info=True,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to embed notes: {str(e)}",
-        )
+        raise_server_error(logger, "Failed to embed notes", e)
