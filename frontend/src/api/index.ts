@@ -1,6 +1,7 @@
 export * from "./client"
 export * from "./notes"
 export * from "./content"
+export * from "./projects"
 export * from "./speech"
 export * from "./chat"
 export * from "./health"

@@ -30,9 +30,8 @@ import {
   BookOpen,
   ChevronsUpDown,
   CreditCard,
-  Frame,
+  FolderOpen,
   LogOut,
-  Map,
   MoreHorizontal,
   MessageSquare,
   Sparkles,
@@ -42,6 +41,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { apiFetch } from "@/api/client"
+import { getProjects } from "@/api/projects"
+import { type Project, PROJECT_ICONS } from "@/types/projects"
 
 const DATA = {
   navMain: [
@@ -61,18 +62,6 @@ const DATA = {
       icon: MessageSquare,
     },
   ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
 }
 
 export const AppSidebar = () => {
@@ -80,6 +69,7 @@ export const AppSidebar = () => {
   const location = useLocation()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [user, setUser] = useState<{ name: string; email: string; avatar: string } | null>(null)
+  const [projects, setProjects] = useState<Project[]>([])
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -103,6 +93,14 @@ export const AppSidebar = () => {
 
     fetchUserData()
   }, [])
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const { data } = await getProjects()
+      if (data) setProjects(data)
+    }
+    fetchProjects()
+  }, [location.pathname])
 
   const isItemActive = (itemUrl: string) => {
     if (itemUrl === "/") {
@@ -167,47 +165,31 @@ export const AppSidebar = () => {
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
           <SidebarGroupLabel>Projects</SidebarGroupLabel>
           <SidebarMenu>
-            {DATA.projects.map(item => (
-              <SidebarMenuItem key={item.name}>
-                <SidebarMenuButton asChild isActive={isItemActive(item.url)}>
-                  <Link to={item.url}>
-                    <item.icon />
-                    <span>{item.name}</span>
+            {projects.map(project => (
+              <SidebarMenuItem key={project.id}>
+                <SidebarMenuButton asChild isActive={isItemActive(`/projects`)}>
+                  <Link to="/projects">
+                    <span className="text-base">{PROJECT_ICONS[project.icon] || "📁"}</span>
+                    <span>{project.name}</span>
                   </Link>
                 </SidebarMenuButton>
-                {/* <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <SidebarMenuAction showOnHover>
-                        <MoreHorizontal />
-                        <span className="sr-only">More</span>
-                      </SidebarMenuAction>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      className="w-48 rounded-lg"
-                      side={isMobile ? "bottom" : "right"}
-                      align={isMobile ? "end" : "start"}
-                    >
-                      <DropdownMenuItem>
-                        <Folder className="text-muted-foreground" />
-                        <span>View Project</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Forward className="text-muted-foreground" />
-                        <span>Share Project</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <Trash2 className="text-muted-foreground" />
-                        <span>Delete Project</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu> */}
               </SidebarMenuItem>
             ))}
             <SidebarMenuItem>
-              <SidebarMenuButton className="text-sidebar-foreground/70">
-                <MoreHorizontal className="text-sidebar-foreground/70" />
-                <span>More</span>
+              <SidebarMenuButton asChild isActive={isItemActive("/projects")}>
+                <Link to="/projects" className="text-sidebar-foreground/70">
+                  {projects.length === 0 ? (
+                    <>
+                      <FolderOpen className="text-sidebar-foreground/70" />
+                      <span>View Projects</span>
+                    </>
+                  ) : (
+                    <>
+                      <MoreHorizontal className="text-sidebar-foreground/70" />
+                      <span>All projects</span>
+                    </>
+                  )}
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

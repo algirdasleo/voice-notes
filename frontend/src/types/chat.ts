@@ -7,6 +7,7 @@ export interface ChatMessage {
 export interface ChatRequest {
   type: "message" | "close"
   content?: string
+  project_ids?: string[]
 }
 
 export interface ChatWebSocketHandlers {

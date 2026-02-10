@@ -8,10 +8,22 @@ import {
   setupChatWebSocketListeners,
   closeChatWebSocket,
 } from "@/api/chat"
+import { getProjects } from "@/api/projects"
 import type { ChatBubble, ChatMessage } from "@/types/chat"
+import type { Project } from "@/types/projects"
+import { PROJECT_DOT_COLOR_MAP } from "@/types/projects"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import {
   Send,
@@ -24,6 +36,7 @@ import {
   Sparkles,
   WifiOff,
   Loader2,
+  Filter,
 } from "lucide-react"
 
 const SUGGESTIONS = [
@@ -55,6 +68,8 @@ export const ChatPage = () => {
   const [isConnected, setIsConnected] = useState(false)
   const [isStreaming, setIsStreaming] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [selectedProjectIds, setSelectedProjectIds] = useState<Set<string>>(new Set())
 
   const wsRef = useRef<WebSocket | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -68,6 +83,24 @@ export const ChatPage = () => {
   useEffect(() => {
     scrollToBottom()
   }, [messages, scrollToBottom])
+
+  useEffect(() => {
+    getProjects().then(({ data }) => {
+      if (data) setProjects(data)
+    })
+  }, [])
+
+  const toggleProject = (projectId: string) => {
+    setSelectedProjectIds(prev => {
+      const next = new Set(prev)
+      if (next.has(projectId)) {
+        next.delete(projectId)
+      } else {
+        next.add(projectId)
+      }
+      return next
+    })
+  }
 
   const resetConnectionState = useCallback(() => {
     setIsConnected(false)
@@ -173,11 +206,15 @@ export const ChatPage = () => {
       setIsStreaming(true)
       setInput("")
 
-      sendChatMessage(wsRef.current, content)
+      sendChatMessage(
+        wsRef.current,
+        content,
+        selectedProjectIds.size > 0 ? [...selectedProjectIds] : undefined
+      )
 
       setTimeout(() => textareaRef.current?.focus(), 0)
     },
-    [input, isStreaming]
+    [input, isStreaming, selectedProjectIds]
   )
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -228,6 +265,78 @@ export const ChatPage = () => {
               </Button>
             </div>
           )}
+
+          {/* Project filter */}
+          {projects.length > 0 && (
+            <div className="mb-2 flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 gap-1.5 text-xs">
+                    <Filter className="size-3" />
+                    {selectedProjectIds.size === 0
+                      ? "All notes"
+                      : `${selectedProjectIds.size} project${selectedProjectIds.size > 1 ? "s" : ""}`}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuLabel className="text-xs">Filter by project</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuCheckboxItem
+                    checked={selectedProjectIds.size === 0}
+                    onCheckedChange={() => setSelectedProjectIds(new Set())}
+                  >
+                    All notes
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuSeparator />
+                  {projects.map(project => (
+                    <DropdownMenuCheckboxItem
+                      key={project.id}
+                      checked={selectedProjectIds.has(project.id)}
+                      onCheckedChange={() => toggleProject(project.id)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`size-2 rounded-full ${PROJECT_DOT_COLOR_MAP[project.color] || "bg-blue-500"}`}
+                        />
+                        <span className="truncate">{project.name}</span>
+                        <span className="ml-auto text-xs text-muted-foreground">
+                          {project.note_count}
+                        </span>
+                      </div>
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {selectedProjectIds.size > 0 && (
+                <div className="flex items-center gap-1 overflow-x-auto">
+                  {projects
+                    .filter(p => selectedProjectIds.has(p.id))
+                    .map(p => (
+                      <Badge
+                        key={p.id}
+                        variant="outline"
+                        className="text-[10px] px-1.5 py-0 shrink-0 cursor-pointer hover:bg-accent"
+                        onClick={() => toggleProject(p.id)}
+                      >
+                        <div
+                          className={`size-1.5 rounded-full mr-1 ${PROJECT_DOT_COLOR_MAP[p.color] || "bg-blue-500"}`}
+                        />
+                        {p.name}
+                      </Badge>
+                    ))}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 px-1.5 text-[10px] text-muted-foreground shrink-0"
+                    onClick={() => setSelectedProjectIds(new Set())}
+                  >
+                    Clear
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="relative flex items-end gap-2">
             <Textarea
               ref={textareaRef}
