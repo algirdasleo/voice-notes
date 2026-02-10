@@ -17,6 +17,7 @@ from voice_notes.models.content import GeneratedContent
 from voice_notes.models.notes import Note
 from voice_notes.models.projects import Project
 from voice_notes.models.shared import Base
+from voice_notes.services.auth import AuthService
 from voice_notes.services.database import get_session
 
 # ============================================================================
@@ -272,3 +273,9 @@ async def ws_client(db: AsyncSession) -> AsyncIterator[TestClient]:
         yield client
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def token(user_id: str) -> str:
+    """Create a valid WebSocket ticket for the test user."""
+    return AuthService.create_ws_ticket(user_id)
