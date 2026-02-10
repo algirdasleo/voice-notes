@@ -1,9 +1,9 @@
 """Project database models."""
 
-from datetime import date
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from voice_notes.models.shared import Base
@@ -20,7 +20,9 @@ class Project(Base):
     description: Mapped[str] = mapped_column(String, default="")
     icon: Mapped[str] = mapped_column(String, default="Folder")
     color: Mapped[str] = mapped_column(String, default="blue")
-    created_at: Mapped[date] = mapped_column(default=date.today)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class NoteProject(Base):

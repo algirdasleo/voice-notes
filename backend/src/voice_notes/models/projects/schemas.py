@@ -1,6 +1,6 @@
 """Project request/response schemas."""
 
-from datetime import date
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -33,7 +33,7 @@ class ProjectResponse(BaseModel):
     description: str
     icon: str
     color: str
-    created_at: date
+    created_at: datetime
     note_count: int = 0
 
 

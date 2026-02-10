@@ -1,6 +1,6 @@
 """Content request/response schemas."""
 
-from datetime import date
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -39,7 +39,7 @@ class ContentResponse(BaseModel):
     title: str
     content_type: str
     body: str
-    created_at: date
+    created_at: datetime
 
 
 class NoteInfo(BaseModel):
@@ -57,7 +57,7 @@ class ContentWithNoteResponse(BaseModel):
     title: str
     content_type: str
     body: str
-    created_at: date
+    created_at: datetime
     note: NoteInfo
 
 

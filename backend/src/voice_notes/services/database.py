@@ -32,6 +32,15 @@ async def create_tables() -> None:
     async with engine.begin() as conn:
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
         await conn.run_sync(Base.metadata.create_all)
+        # Migrate created_at columns from DATE to TIMESTAMPTZ for existing tables
+        for table in ("note", "content", "project"):
+            await conn.execute(
+                text(
+                    f"ALTER TABLE {table} "
+                    f"ALTER COLUMN created_at TYPE TIMESTAMPTZ "
+                    f"USING created_at::TIMESTAMPTZ"
+                )
+            )
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:

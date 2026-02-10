@@ -1,6 +1,6 @@
 """Note request/response schemas."""
 
-from datetime import date
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -30,7 +30,7 @@ class NoteResponse(BaseModel):
     title: str
     transcription: str
     tags: list[str]
-    created_at: date
+    created_at: datetime
 
 
 class SuggestTagsRequest(BaseModel):

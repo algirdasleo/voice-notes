@@ -1,9 +1,9 @@
 """Content database model."""
 
-from datetime import date
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from voice_notes.models.shared import Base
@@ -30,4 +30,6 @@ class GeneratedContent(Base):
     title: Mapped[str] = mapped_column(String)
     content_type: Mapped[str] = mapped_column(String)
     body: Mapped[str] = mapped_column(String)
-    created_at: Mapped[date] = mapped_column(default=date.today)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
