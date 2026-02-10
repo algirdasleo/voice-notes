@@ -89,30 +89,44 @@ class VectorStoreService:
         user_id: str,
         session: AsyncSession,
         top_k: int = 5,
+        note_ids: list[UUID] | None = None,
     ) -> list[SimilarChunk]:
-        """Search for note chunks most similar to the query."""
+        """Search for note chunks most similar to the query.
+
+        Args:
+            query: The search query.
+            user_id: The user ID to scope results.
+            session: The database session.
+            top_k: Number of results to return.
+            note_ids: Optional list of note IDs to restrict search to.
+        """
         query_embedding = await self.get_embedding(query)
 
-        result = await session.execute(
-            text("""
-                SELECT
-                    ne.note_id,
-                    ne.chunk_text,
-                    ne.chunk_index,
-                    n.title as note_title,
-                    ne.embedding <=> :embedding AS distance
-                FROM note_embedding ne
-                JOIN note n ON n.id = ne.note_id
-                WHERE ne.user_id = :user_id
-                ORDER BY distance ASC
-                LIMIT :top_k
-            """),
-            {
-                "embedding": str(query_embedding),
-                "user_id": user_id,
-                "top_k": top_k,
-            },
-        )
+        # Build WHERE clause dynamically based on note_ids filter
+        note_filter = "AND ne.note_id = ANY(:note_ids)" if note_ids else ""
+        sql = text(f"""
+            SELECT
+                ne.note_id,
+                ne.chunk_text,
+                ne.chunk_index,
+                n.title as note_title,
+                ne.embedding <=> :embedding AS distance
+            FROM note_embedding ne
+            JOIN note n ON n.id = ne.note_id
+            WHERE ne.user_id = :user_id
+              {note_filter}
+            ORDER BY distance ASC
+            LIMIT :top_k
+        """)
+        params: dict = {
+            "embedding": str(query_embedding),
+            "user_id": user_id,
+            "top_k": top_k,
+        }
+        if note_ids:
+            params["note_ids"] = [str(nid) for nid in note_ids]
+
+        result = await session.execute(sql, params)
 
         rows = result.fetchall()
         return [

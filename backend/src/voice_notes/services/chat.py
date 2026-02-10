@@ -30,12 +30,18 @@ class ChatService:
         self.vector_store = vector_store
         self.system_prompt = CHAT_SYSTEM_PROMPT
 
-    def _create_agent(self, user_id: str, session: AsyncSession):
+    def _create_agent(
+        self,
+        user_id: str,
+        session: AsyncSession,
+        note_ids: list | None = None,
+    ):
         """Create a react agent with user-scoped tools."""
         tools = create_user_tools(
             user_id=user_id,
             session=session,
             vector_store=self.vector_store,
+            note_ids=note_ids,
         )
         return create_agent(
             model=self.llm,
@@ -48,13 +54,14 @@ class ChatService:
         user_id: str,
         messages: list,
         session: AsyncSession,
+        note_ids: list | None = None,
     ) -> AsyncGenerator[str, None]:
         """Stream agent response tokens for the given message history.
 
         Yields:
             Individual text tokens from the agent's response.
         """
-        agent = self._create_agent(user_id, session)
+        agent = self._create_agent(user_id, session, note_ids=note_ids)
 
         async for chunk, _ in agent.astream(
             {"messages": messages},

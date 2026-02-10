@@ -23,7 +23,7 @@ from supertokens_python.recipe.thirdparty.provider import (
     ProviderInput,
 )
 
-from voice_notes.api.routers import auth, chat, content, health, notes, speech
+from voice_notes.api.routers import auth, chat, content, health, notes, projects, speech
 from voice_notes.config.settings import get_settings
 from voice_notes.services.chat import ChatService
 from voice_notes.services.database import create_tables
@@ -128,4 +128,5 @@ app.include_router(notes.router, prefix="/notes", tags=["Voice Notes"])
 app.include_router(content.router, prefix="/content", tags=["Notes Content"])
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(speech.router, prefix="/speech", tags=["Speech"])
+app.include_router(projects.router, prefix="/projects", tags=["Projects"])
 app.include_router(chat.router, prefix="/chat", tags=["AI Chat"])

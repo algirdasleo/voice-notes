@@ -37,6 +37,7 @@ def create_user_tools(
     user_id: str,
     session: AsyncSession,
     vector_store: VectorStoreService,
+    note_ids: list[PyUUID] | None = None,
 ) -> list[BaseTool]:
     """Create agent tools scoped to a specific user and session."""
 
@@ -59,6 +60,7 @@ def create_user_tools(
                 user_id=user_id,
                 session=session,
                 top_k=5,
+                note_ids=note_ids,
             )
 
             if not results:
@@ -88,10 +90,13 @@ def create_user_tools(
             A formatted list of all note titles, IDs, and creation dates.
         """
         try:
+            query_filter = select(
+                Note.id, Note.title, Note.created_at, Note.tags
+            ).where(Note.user_id == user_id)
+            if note_ids:
+                query_filter = query_filter.where(Note.id.in_(note_ids))
             result = await session.execute(
-                select(Note.id, Note.title, Note.created_at, Note.tags)
-                .where(Note.user_id == user_id)
-                .order_by(Note.created_at.desc())
+                query_filter.order_by(Note.created_at.desc())
             )
             rows = result.fetchall()
 

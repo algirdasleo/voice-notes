@@ -37,5 +37,5 @@ async def create_tables() -> None:
 async def get_session() -> AsyncIterator[AsyncSession]:
     """Get an async database session."""
     engine = get_engine()
-    async with AsyncSession(engine) as session:
+    async with AsyncSession(engine, expire_on_commit=False) as session:
         yield session

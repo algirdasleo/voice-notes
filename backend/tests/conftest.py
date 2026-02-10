@@ -14,6 +14,7 @@ from voice_notes.api.dependencies import get_current_user
 from voice_notes.main import app
 from voice_notes.models.content import GeneratedContent
 from voice_notes.models.notes import Note
+from voice_notes.models.projects import Project
 from voice_notes.models.shared import Base
 from voice_notes.services.database import get_session
 
@@ -167,6 +168,29 @@ async def create_content(
     await db.commit()
     await db.refresh(content)
     return content
+
+
+async def create_project(
+    db: AsyncSession,
+    user_id: str,
+    name: str = "Test Project",
+    description: str = "Test description",
+    icon: str = "Folder",
+    color: str = "blue",
+) -> Project:
+    """Factory function to create a project."""
+    project = Project(
+        id=uuid4(),
+        user_id=user_id,
+        name=name,
+        description=description,
+        icon=icon,
+        color=color,
+    )
+    db.add(project)
+    await db.commit()
+    await db.refresh(project)
+    return project
 
 
 # ============================================================================

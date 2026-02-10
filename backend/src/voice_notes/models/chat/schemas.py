@@ -1,6 +1,7 @@
 """Chat request/response schemas."""
 
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -17,4 +18,8 @@ class AIChatRequest(BaseModel):
     type: Literal["message", "close"]
     content: str | None = Field(
         default=None, description="Content is required for 'message' type"
+    )
+    project_ids: list[UUID] | None = Field(
+        default=None,
+        description="Optional project IDs to filter which notes the AI can search",
     )

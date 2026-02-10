@@ -11,6 +11,7 @@ from supertokens_python.recipe.session import SessionContainer
 
 from voice_notes.api.dependencies import get_current_user
 from voice_notes.models.chat.schemas import AIChatRequest, WebSocketUser
+from voice_notes.repositories.projects import ProjectsRepository
 from voice_notes.services.auth import AuthService
 from voice_notes.services.database import get_engine
 
@@ -111,12 +112,21 @@ async def chat_with_notes(websocket: WebSocket):
                         # Add user message to history
                         messages.append(HumanMessage(content=message.content))
 
+                        # Resolve project_ids to note_ids if provided
+                        note_ids = None
+                        if message.project_ids:
+                            projects_repo = ProjectsRepository(db_session)
+                            note_ids = await projects_repo.get_note_ids_for_projects(
+                                message.project_ids, user.user_id
+                            )
+
                         # Stream tokens from the agent
                         full_response = ""
                         async for token in chat_service.stream_response(
                             user_id=user.user_id,
                             messages=messages,
                             session=db_session,
+                            note_ids=note_ids,
                         ):
                             full_response += token
                             try:
