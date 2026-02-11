@@ -173,7 +173,7 @@ export function ContentCreateDialog({
               <Input
                 placeholder="e.g. Spanish, French, German..."
                 value={targetLanguage}
-                onChange={(e) => setTargetLanguage(e.target.value)}
+                onChange={e => setTargetLanguage(e.target.value)}
               />
             </div>
           )}
@@ -185,7 +185,7 @@ export function ContentCreateDialog({
               <Textarea
                 placeholder="Describe what you want to generate..."
                 value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
+                onChange={e => setCustomPrompt(e.target.value)}
                 rows={3}
               />
             </div>
