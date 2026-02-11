@@ -24,12 +24,17 @@ class ContentGenerationService:
         self,
         transcriptions: list[dict[str, str]],
         content_type: str,
+        *,
+        target_language: str | None = None,
+        custom_prompt: str | None = None,
     ) -> dict[str, str]:
         """Generate content from transcriptions.
 
         Args:
             transcriptions: List of dicts with 'title' and 'text' keys.
             content_type: The type of content to generate.
+            target_language: Target language for translation (only for Translate type).
+            custom_prompt: User-provided prompt (only for Custom Prompt type).
 
         Returns:
             Dict with 'title' and 'body' of the generated content.
@@ -37,6 +42,14 @@ class ContentGenerationService:
         base_prompt = CONTENT_TYPE_PROMPTS.get(
             content_type, CONTENT_TYPE_PROMPTS["Custom Prompt"]
         )
+
+        if content_type == "Translate" and target_language:
+            base_prompt = (
+                f"Translate the following voice note transcriptions into {target_language}. "
+                "Preserve the original meaning and tone."
+            )
+        elif content_type == "Custom Prompt" and custom_prompt:
+            base_prompt = custom_prompt
 
         system_prompt = (
             f"{base_prompt}\n\n"

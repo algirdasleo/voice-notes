@@ -20,6 +20,8 @@ class ContentGenerateRequest(BaseModel):
 
     note_ids: list[UUID]
     content_type: str
+    target_language: str | None = None
+    custom_prompt: str | None = None
 
 
 class ContentUpdate(BaseModel):

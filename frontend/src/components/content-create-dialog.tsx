@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -51,6 +53,8 @@ export function ContentCreateDialog({
   const [isLoadingNotes, setIsLoadingNotes] = useState(false)
   const [selectedNoteIds, setSelectedNoteIds] = useState<Set<string>>(new Set())
   const [contentType, setContentType] = useState<string>("")
+  const [targetLanguage, setTargetLanguage] = useState<string>("")
+  const [customPrompt, setCustomPrompt] = useState<string>("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -58,6 +62,8 @@ export function ContentCreateDialog({
     if (open) {
       setSelectedNoteIds(new Set())
       setContentType("")
+      setTargetLanguage("")
+      setCustomPrompt("")
       setError(null)
       loadNotes()
     }
@@ -104,6 +110,8 @@ export function ContentCreateDialog({
     const payload: ContentGenerateRequest = {
       note_ids: Array.from(selectedNoteIds),
       content_type: contentType,
+      ...(contentType === "Translate" && targetLanguage ? { target_language: targetLanguage } : {}),
+      ...(contentType === "Custom Prompt" && customPrompt ? { custom_prompt: customPrompt } : {}),
     }
 
     try {
@@ -121,11 +129,15 @@ export function ContentCreateDialog({
     }
   }
 
-  const canGenerate = selectedNoteIds.size > 0 && contentType !== ""
+  const canGenerate =
+    selectedNoteIds.size > 0 &&
+    contentType !== "" &&
+    (contentType !== "Translate" || targetLanguage.trim() !== "") &&
+    (contentType !== "Custom Prompt" || customPrompt.trim() !== "")
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="size-5" />
@@ -136,7 +148,7 @@ export function ContentCreateDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5 py-2">
+        <div className="space-y-5 py-2 overflow-y-auto min-h-0 flex-1">
           {/* Content Type Selection */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Content Type</label>
@@ -153,6 +165,31 @@ export function ContentCreateDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Translation Language Input */}
+          {contentType === "Translate" && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Target Language</label>
+              <Input
+                placeholder="e.g. Spanish, French, German..."
+                value={targetLanguage}
+                onChange={(e) => setTargetLanguage(e.target.value)}
+              />
+            </div>
+          )}
+
+          {/* Custom Prompt Input */}
+          {contentType === "Custom Prompt" && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Custom Prompt</label>
+              <Textarea
+                placeholder="Describe what you want to generate..."
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                rows={3}
+              />
+            </div>
+          )}
 
           {/* Voice Notes Selection */}
           <div className="space-y-2">
@@ -188,7 +225,7 @@ export function ContentCreateDialog({
                 No voice notes available. Create some notes first.
               </p>
             ) : (
-              <ScrollArea className="max-h-70 rounded-md border">
+              <ScrollArea className="h-48 rounded-md border">
                 <div className="p-1">
                   {notes.map(note => {
                     const isSelected = selectedNoteIds.has(note.id)

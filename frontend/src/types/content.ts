@@ -21,6 +21,8 @@ export interface ContentCreate {
 export interface ContentGenerateRequest {
   note_ids: string[]
   content_type: string
+  target_language?: string
+  custom_prompt?: string
 }
 
 export interface ContentUpdate {

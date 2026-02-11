@@ -106,7 +106,12 @@ async def generate_content(
             transcriptions.append({"title": note.title, "text": note.transcription})
 
         service = ContentGenerationService()
-        result = await service.generate(transcriptions, request.content_type)
+        result = await service.generate(
+            transcriptions,
+            request.content_type,
+            target_language=request.target_language,
+            custom_prompt=request.custom_prompt,
+        )
 
         content_repo = ContentRepository(session)
         db_content = GeneratedContent(
