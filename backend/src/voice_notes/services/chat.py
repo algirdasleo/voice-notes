@@ -25,7 +25,7 @@ class ChatService:
         self.llm = ChatOpenAI(
             model=settings.CHAT_MODEL,
             api_key=settings.OPENAI_API_KEY,
-            streaming=True,
+            streaming=True,  # type: ignore
         )
         self.vector_store = vector_store
         self.system_prompt = CHAT_SYSTEM_PROMPT
